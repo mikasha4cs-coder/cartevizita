@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petrescu Mihai Valentin - Fisioterapeuta Pediátrico</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom right, #e0f7fa, #f0f4f8);
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 60px auto 30px auto;
+            background-color: #ffffffcc;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        /* Header cu poza și selector de limbă */
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start; /* titlul și selectorul sus */
+            margin-bottom: 20px;
+        }
+        .profile-pic {
+            width: 120px;        /* poza mai mare */
+            height: 120px;       /* pătrată */
+            border-radius: 12px; /* colțuri ușor rotunjite */
+            object-fit: cover;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .header-content {
+    margin-left: 20px;
+    flex-grow: 1;
+    text-align: center; /* CENTRAT sub nume */
+}
+        }
+        .language-selector {
+            background-color: #fff;
+            padding: 5px 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        h1 {
+            color: #2c3e50;
+            margin: 0;
+            font-size: 1.8em;
+        }
+       .subtitle {
+    font-size: 1.4em;
+    color: #1abc9c;
+    margin: 5px 0 10px 0; /* spațiu între subtitlu și experiență */
+        }
+        h2 {
+            text-align: left;
+            color: #1abc9c;
+            font-size: 1.6em;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+        p {
+            line-height: 1.6;
+            font-size: 1.1em;
+        }
+        .services ul {
+            list-style-type: disc;
+            padding-left: 20px;
+            text-align: left;
+            display: inline-block;
+            font-size: 1.05em;
+        }
+        .services ul li {
+            margin-bottom: 8px;
+        }
+        .languages-info {
+            margin-top: 20px;
+            font-size: 1em;
+        }
+    </style>
+</head>
+<body onload="setDefaultLanguage()">
+    <div class="container">
+        <!-- Header cu poza și selector de limbă -->
+      <div class="header-top">
+    <img src="mihai.jpg" alt="Mihai" class="profile-pic">
+    <div class="header-content">
+        <h1 id="name">PETRESCU MIHAI VALENTIN</h1>
+        <div class="subtitle" id="subtitle">Fisioterapeuta Pediátrico</div>
+        <p id="experience">10 años de experiencia dedicados a la rehabilitación infantil.<br>En Torrevieja y alrededores.</p>
+    </div>
+    <div class="language-selector">
+        <select id="language" onchange="changeLanguage()">
+            <option value="es">Español</option>
+            <option value="ro">Română</option>
+            <option value="en">English</option>
+        </select>
+    </div>
+        </div>
+
+      
+
+        <h2 id="services-title">Servicios</h2>
+        <div class="services">
+            <ul id="services-list">
+		 <li>Evaluación global del desarrollo neuromotor del lactante</li>
+                <li>Evaluación postural del niño pequeño y del adolescente</li>
+                <li>Estimulación neuromotora para el desarrollo armonioso del lactante</li>
+                <li>Alivio de cólicos y molestias en lactantes</li>
+                <li>Prevención y mejora de las dificultades de agarre al pecho causadas por postura viciosa</li>
+                <li>Recuperación de las asimetrías posturales en lactantes: tortícolis, laterocolis, plagiocefalia, oblicuidad de la pelvis – aplicando técnicas de osteopatía pediátrica</li>
+                <li>Recuperación de las posiciones viciosas de las extremidades inferiores: talus valgo, metatarso aducto, talus varo, pie zambo congénito</li>
+                <li>Fisioterapia respiratoria pediátrica</li>
+                <li>Recuperación de las deficiencias posturales en niños y adolescentes: escoliosis, hipercifosis e hiperlordosis, espalda plana, genu varo, genu valgo, genu recurvatum, pie plano valgo, etc.a</li>
+          
+                <li>Recuperación y tratamiento en patología neurológica, ortopédica y traumatológica</li>
+                <li>Recuperación y estimulación de la motricidad general del niño: desarrollo de fuerza muscular, resistencia, equilibrio, coordinación y motricidad gruesa mediante programas personalizados de terapia</li>
+		<li>Terapia manual</li>
+		<li>Vendaje neuromuscular (kinesiotaping)</li>
+            </ul>
+        </div>
+
+        <p class="languages-info" id="languages-info">Idiomas: Rumano (nativo), Inglés (avanzado), Español (básico)</p>
+    </div>
+
+    <script>
+        const texts = {
+            ro: {
+                subtitle: "Fizioterapeut Pediatru",
+                experience: "10 ani de experiență dedicați reabilitării copiilor.<br>In Torrevieja și împrejurimi.",
+                servicesTitle: "Servicii",
+                servicesList: [
+   "Evaluare globală a dezvoltării neuromotorii a sugarului",
+  "Evaluare posturală a copilului mic și al adolescentului",
+  "Stimulare neuromotorie pentru dezvoltarea armonioasă a sugarului",
+  "Ameliorarea colicilor și disconfortului la sugari",
+  "Prevenirea și ameliorarea dificultăților de atașare la sân cauzate de postură vicioasă",
+  "Recuperarea asimetriilor posturale la sugari: torticolis, laterocollis, plagiocefalie, oblicitate de bazin – aplicând tehnici de osteopatie pediatrică",
+  "Recuperarea pozițiilor vicioase ale membrelor inferioare: talus valgus, metatars adduct, talus varus, picior strâmb congenital",
+  "Fizioterapie respiratorie pediatrică",
+  "Recuperarea deficiențelor posturale la copii și adolescenți: scolioză, hipercifoză și hiperlordoză, spate plat, genu-varum, genu-valgum, genu-recurvatum, picior plat valg etc",
+  "Recuperare și tratament în patologie neurologică, ortopedică și traumatologică",
+  "Recuperarea și stimularea motricității generale a copilului: dezvoltarea forței musculare, rezistenței, echilibrului, coordonării și motricității grosiere prin programe personalizate de terapie",
+  "Terapie manuală",
+  "Bandajare kinesiologică (kinesiotaping)"
+                ],
+                languagesInfo: "Limbi cunoscute: Română (nativ), Engleză (avansat), Spaniolă (bază)"
+            },
+            en: {
+                subtitle: "Pediatric Physiotherapist",
+                experience: "10 years of experience dedicated to child rehabilitation.<br>In Torrevieja and surroundings.",
+                servicesTitle: "Services",
+                servicesList: [
+   "Global evaluation of the infant's neuromotor development",
+  "Postural assessment of the young child and adolescent",
+  "Neuromotor stimulation for harmonious development of the infant",
+  "Relief of colic and discomfort in infants",
+  "Prevention and improvement of breastfeeding difficulties caused by faulty posture",
+  "Recovery of postural asymmetries in infants: torticollis, laterocollis, plagiocephaly, pelvic obliquity – using pediatric osteopathy techniques",
+  "Recovery of faulty positions of the lower limbs: talus valgus, metatarsal adduct, talus varus, congenital clubfoot",
+  "Pediatric respiratory physiotherapy",
+  "Recovery of postural deficiencies in children and adolescents: scoliosis, hyperkyphosis and hyperlordosis, flat back, genu varum, genu valgum, genu recurvatum, flat valgus foot, etc.",
+  "Recovery and treatment in neurological, orthopedic and trauma pathology",
+  "Recovery and stimulation of the child's general motor skills: development of muscular strength, endurance, balance, coordination and gross motor skills through personalized therapy programs",
+  "Manual therapy",
+  "Neuromuscular taping (kinesiotaping)"
+                ],
+                languagesInfo: "Languages: Romanian (native), English (advanced), Spanish (basic)"
+            },
+            es: {
+                subtitle: "Fisioterapeuta Pediátrico",
+                experience: "10 años de experiencia dedicados a la rehabilitación infantil.<br>En Torrevieja y alrededores.",
+                servicesTitle: "Servicios",
+                servicesList: [
+   "Evaluación global del desarrollo neuromotor del lactante",
+  "Evaluación postural del niño pequeño y del adolescente",
+  "Estimulación neuromotora para el desarrollo armonioso del lactante",
+  "Alivio de cólicos y molestias en lactantes",
+  "Prevención y mejora de las dificultades de agarre al pecho causadas por postura viciosa",
+  "Recuperación de las asimetrías posturales en lactantes: tortícolis, laterocolis, plagiocefalia, oblicuidad de la pelvis – aplicando técnicas de osteopatía pediátrica",
+  "Recuperación de las posiciones viciosas de las extremidades inferiores: talus valgo, metatarso aducto, talus varo, pie zambo congénito",
+  "Fisioterapia respiratoria pediátrica",
+  "Recuperación de las deficiencias posturales en niños y adolescentes: escoliosis, hipercifosis e hiperlordosis, espalda plana, genu varo, genu valgo, genu recurvatum, pie plano valgo, etc.",
+  "Recuperación y tratamiento en patología neurológica, ortopédica y traumatológica",
+  "Recuperación y estimulación de la motricidad general del niño: desarrollo de fuerza muscular, resistencia, equilibrio, coordinación y motricidad gruesa mediante programas personalizados de terapia",
+  "Terapia manual",
+  "Vendaje neuromuscular (kinesiotaping)"
+                ],
+                languagesInfo: "Idiomas: Rumano (nativo), Inglés (avanzado), Español (básico)"
+            }
+        };
+
+        function changeLanguage() {
+            const lang = document.getElementById("language").value;
+            document.getElementById("subtitle").innerHTML = texts[lang].subtitle;
+            document.getElementById("experience").innerHTML = texts[lang].experience;
+            document.getElementById("services-title").innerHTML = texts[lang].servicesTitle;
+            const servicesList = texts[lang].servicesList.map(item => `<li>${item}</li>`).join('');
+            document.getElementById("services-list").innerHTML = servicesList;
+            document.getElementById("languages-info").innerHTML = texts[lang].languagesInfo;
+        }
+
+        function setDefaultLanguage() {
+            document.getElementById("language").value = "es"; // deschidere în spaniolă
+            changeLanguage();
+        }
+    </script>
+</body>
+</html>
