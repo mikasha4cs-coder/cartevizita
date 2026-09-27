@@ -19,6 +19,10 @@ Pentru alte foldere: deschide folderul în Drive, copiază partea de după `/fol
 
 ---
 
+**PC-ul îți trebuie o singură dată**, circa 15 minute, pentru Partea 1 (scriptul Google) și Partea 2 (Netlify). După asta, totul se face doar de pe tabletă: pacienții, Admin-ul, schimbarea termenilor. Pe PC nu instalezi aplicația și nu trebuie să rămână pornit.
+
+---
+
 ## Partea 0: pregătește fișierele pe PC
 
 1. Salvează `NordicFysio-Anamnesis.zip` pe PC (de exemplu pe Desktop).
@@ -85,13 +89,13 @@ Pentru termeni și bife **nu** mai e nevoie de Netlify. Deploy nou doar dacă se
 
 **Nu șterge datele Chrome pe tabletă**: acolo sunt conexiunea și fișele care încă așteaptă upload.
 
-Aceeași adresă `/exec` și aceeași cheie merg pe toate dispozitivele: tabletă, PC sau a doua tabletă.
+Dacă mai iei o tabletă, repeți doar Partea 3, cu aceeași adresă `/exec` și aceeași cheie.
 
 ---
 
 ## Intrarea în Admin
 
-Butonul ⚙ din bara de sus, sau ții apăsat 2 secunde pe logo-ul „NordicFysio”, sau Ctrl+Q pe PC → parola.
+Butonul ⚙ din bara de sus sau ții apăsat 2 secunde pe logo-ul „NordicFysio” → parola.
 Admin-ul se blochează singur când apeși „← Back to form”.
 
 ## Termeni și bife: le schimbați singuri, fără update
@@ -108,7 +112,6 @@ Admin → **Terms & checkboxes**:
     - **Name in the JSON file**: lasă-l gol, se completează automat (de ex. `ConsentIHaveReadAndAccept`). Cele 3 vechi rămân `ConsentEmail`, `ConsentWhatsApp`, `ConsentPostal`.
 - **Preview** arată cum vede pacientul. **Save** salvează pe dispozitiv și în cloud; celelalte tablete primesc schimbarea la următoarea deschidere sau în maximum ~5–7 minute.
 - **Export to file / Import from file** = copie de siguranță. **Restore original text** = înapoi la textul NordicFysio original.
-- Mai comod: editează de pe PC (adresa Netlify în Chrome, conectat cu aceeași adresă `/exec` și cheie).
 - Fiecare PDF păstrează exact textul și bifele pe care le-a văzut pacientul când a semnat, chiar dacă textul se schimbă ulterior.
 - Termenii sunt ținuți în fișierul `NordicFysio_Anamnesis_Settings.json` din My Drive-ul clinicii. Nu-l șterge.
 
