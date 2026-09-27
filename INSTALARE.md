@@ -1,15 +1,17 @@
 # NordicFysio Anamnesis — instalare pe tabletă (fără Gmail pe tabletă)
 
-Ce e în acest repo:
+Ce conține pachetul `NordicFysio-Anamnesis.zip`:
 
 - `netlify/` — aplicația (fostul `AnamnesisFinal.html`, acum `netlify/index.html`) + fișierele pentru instalare pe tabletă. **Acesta e folderul care se trage pe Netlify.**
 - `apps-script/Code.gs` — scriptul care salvează PDF-ul și JSON-ul în Google Drive-ul clinicii.
+- `TUTORIAL-instalare.html` — acest tutorial (se deschide cu dublu-click în browser).
 
-Cheia secretă **nu** e în fișiere: o generează Google la pasul 1.5, deci repo-ul poate rămâne public.
+Cheia secretă **nu** e în fișiere: o generează Google când rulezi `testSetup` (Partea 1).
 
 **Nu există .exe.** Un .exe merge doar pe Windows. Aplicația e o pagină web: o urci o singură dată pe Netlify (hosting gratuit, adresă https), iar pe tabletă o instalezi din Chrome. Apare ca iconiță pe ecran și se deschide ca o aplicație normală.
 
 Drumul datelor: tableta → scriptul Google de pe contul clinicii (`Code.gs`) → Google Drive:
+
 - `Patient_Prenume_Nume.json` în folderul **Anamnesis (JSON)** (`1qCSVZ0HbaIijC3P1KA1hmEOzg9O9F1rj`);
 - `Patient_Prenume_Nume_AAAALLZZ_OOMM.pdf` în folderul **Patients consent (PDF)** (`1LaJCEvPiyOUCniZKvEqvFw_rVTyw4KVE`).
 
@@ -17,10 +19,10 @@ Pentru alte foldere: deschide folderul în Drive, copiază partea de după `/fol
 
 ---
 
-## Partea 0: descarcă fișierele pe PC
+## Partea 0: pregătește fișierele pe PC
 
-1. Deschide <https://github.com/mikasha4cs-coder/cartevizita/archive/refs/heads/claude/quirky-mendel-ms933d.zip> → se descarcă un ZIP.
-2. Click dreapta pe ZIP → **Extract All**. Apare un folder care conține `netlify` și `apps-script`.
+1. Salvează `NordicFysio-Anamnesis.zip` pe PC (de exemplu pe Desktop).
+2. Click dreapta pe ZIP → **Extract All**. Apare folderul `NordicFysio-Anamnesis`, cu `netlify`, `apps-script` și tutorialul.
 3. Nu mai folosi fișierele vechi din `C:\Users\mikas\Desktop\Utile\EsiReg` — nu amesteca versiunile.
 
 ## Partea 1: Apps Script (pe PC, ~10 minute)
@@ -31,28 +33,33 @@ Pentru alte foldere: deschide folderul în Drive, copiază partea de după `/fol
 4. Selectează tot codul existent (`function myFunction() {…}`) cu Ctrl+A, lipește cu Ctrl+V, salvează cu Ctrl+S.
 5. În bara de sus, lângă „Run” și „Debug”, alege `testSetup` și apasă **▶ Run**.
 6. Apare „Authorization required”:
-   - **Review permissions** → alege Gmail-ul clinicii;
-   - la „Google hasn't verified this app” apasă **Advanced** → **Go to NordicFysio Upload (unsafe)**;
-   - bifează tot („Select all”) → **Continue**.
+    - **Review permissions** → alege Gmail-ul clinicii;
+    - la „Google hasn't verified this app” apasă **Advanced** → **Go to NordicFysio Upload (unsafe)**;
+    - bifează tot („Select all”) → **Continue**.
 
-   Avertismentul e normal pentru orice script personal care lucrează cu Drive-ul.
+    Avertismentul e normal pentru orice script personal care lucrează cu Drive-ul.
+
 7. Jos, în „Execution log”, trebuie să apară:
-   - `Account: …@gmail.com`
-   - `JSON folder: …`
-   - `PDF folder: …`
-   - `Secret key (paste it in the app): …` → **copiază cheia într-un Notepad.**
+    - `Account: …@gmail.com`
+    - `JSON folder: …`
+    - `PDF folder: …`
+    - `Secret key (paste it in the app): …` → **copiază cheia într-un Notepad.**
 
-   Dacă apare „No item with the given ID could be found”, ești pe alt cont decât cel care deține folderele.
+    Dacă apare „No item with the given ID could be found”, ești pe alt cont decât cel care deține folderele.
+
 8. Dreapta sus: **Deploy** → **New deployment** → la „Select type” iconița ⚙ → **Web app**:
-   - Description: `v1`
-   - Execute as: **Me**
-   - Who has access: **Anyone** (NU „Anyone with Google account”)
+    - Description: `v1`
+    - Execute as: **Me**
+    - Who has access: **Anyone** (NU „Anyone with Google account”)
 
-   Apasă **Deploy** (dacă cere din nou autorizare, repetă pasul 6).
+    Apasă **Deploy** (dacă cere din nou autorizare, repetă pasul 6).
+
 9. Copiază **Web app URL** (`https://script.google.com/macros/s/…/exec`) în Notepad → Done.
-   Verificare: dacă deschizi adresa în browser, apare „NordicFysio Anamnesis: the connection works…”.
+
+    Verificare: dacă deschizi adresa în browser, apare „NordicFysio Anamnesis: the connection works…”.
 
 Dacă modifici vreodată scriptul: Deploy → Manage deployments → ✏️ → Version: **New version** → Deploy. Adresa rămâne aceeași.
+
 Dacă pierzi cheia: rulează din nou `testSetup` (afișează aceeași cheie). Dacă a ajuns la cine nu trebuie: rulează `newSecretKey` și reconectează toate dispozitivele.
 
 ## Partea 2: Netlify (pe PC, ~5 minute)
@@ -94,11 +101,11 @@ Admin → **Terms & checkboxes**:
 - **Page 1** = formularul, chiar deasupra semnăturii. **Page 2** = ecranul cu „I AGREE”.
 - Butoanele **+ Text / + Checkbox / + Title** apar între blocuri: blocul nou se pune exact acolo.
 - **↑ ↓** mută blocul în pagină, **⇄** îl mută pe cealaltă pagină, **🗑** îl șterge.
-- Fiecare bloc are 3 câmpuri: 🇬🇧 🇪🇸 🇫🇷. Dacă o limbă e goală, se afișează textul englezesc. În PDF apare mereu textul englezesc (ca până acum).
+- Fiecare bloc are 3 câmpuri: 🇬🇧 🇪🇸 🇫🇷. Dacă o limbă e goală, se afișează textul englezesc. În PDF apare textul englezesc, ca până acum (dacă lipsește, cel spaniol).
 - La bife:
-  - **Mandatory**: pacientul nu poate continua fără să o bifeze;
-  - **Group A/B/C/D**: dintr-un grup se poate bifa doar una. Email / WhatsApp / Poștă sunt în grupul A, ca înainte; alege „— (independent)” dacă vrei să se poată bifa mai multe;
-  - **Name in the JSON file**: lasă-l gol, se completează automat (de ex. `ConsentIHaveReadAndAccept`). Cele 3 vechi rămân `ConsentEmail`, `ConsentWhatsApp`, `ConsentPostal`.
+    - **Mandatory**: pacientul nu poate continua fără să o bifeze;
+    - **Group A/B/C/D**: dintr-un grup se poate bifa doar una. Email / WhatsApp / Poștă sunt în grupul A, ca înainte; alege „— (independent)” dacă vrei să se poată bifa mai multe;
+    - **Name in the JSON file**: lasă-l gol, se completează automat (de ex. `ConsentIHaveReadAndAccept`). Cele 3 vechi rămân `ConsentEmail`, `ConsentWhatsApp`, `ConsentPostal`.
 - **Preview** arată cum vede pacientul. **Save** salvează pe dispozitiv și în cloud; celelalte tablete primesc schimbarea la următoarea deschidere sau în maximum ~5–7 minute.
 - **Export to file / Import from file** = copie de siguranță. **Restore original text** = înapoi la textul NordicFysio original.
 - Mai comod: editează de pe PC (adresa Netlify în Chrome, conectat cu aceeași adresă `/exec` și cheie).
