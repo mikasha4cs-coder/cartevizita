@@ -4,7 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>NordicFysio — Anamnesis</title>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<meta name="theme-color" content="#16a596">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="google" content="notranslate">
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
   :root{
     --teal:#16a596;
@@ -24,6 +30,7 @@
     --shadow:0 2px 10px rgba(20,40,45,.08);
   }
   *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
   html,body{margin:0;padding:0;}
   body{
     background:var(--bg);
@@ -52,7 +59,6 @@
     padding:8px 12px;font-size:13px;cursor:pointer;color:var(--text);font-weight:600;
   }
   .menu-btn:hover{background:#e6ebed;}
-  .menu-btn.admin{display:none;background:#fff2d9;border-color:#f0d495;}
   .flags{display:flex;gap:6px;margin-left:8px;}
   .flag-btn{
     width:34px;height:24px;border-radius:4px;cursor:pointer;border:2px solid transparent;
@@ -110,19 +116,32 @@
   .next-wrap{display:flex;justify-content:flex-end;margin-top:6px;}
   .next-wrap .btn{min-width:180px;}
 
-  /* Consent screen */
+  /* Consent screen + admin-editable text/checkbox blocks */
   #consentScreen{display:none;}
-  .legal-text{
-    white-space:pre-line;font-size:14.5px;line-height:1.55;color:#33454b;
-    background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px;
-    max-height:46vh;overflow-y:auto;
+  #lockScreen{display:none;}
+  .c-blocks:empty{display:none;}
+  #formBlocks{margin-bottom:14px;}
+  .c-heading{font-weight:800;font-size:16px;color:var(--teal-dark);margin:14px 0 8px;white-space:pre-line;}
+  .c-heading:first-child{margin-top:0;}
+  .c-text{white-space:pre-line;font-size:14.5px;line-height:1.55;color:#33454b;margin:0 0 12px;}
+  .c-check{
+    display:flex;align-items:flex-start;gap:12px;padding:12px 14px;margin:0 0 8px;
+    border:1px solid var(--border);border-radius:8px;background:var(--panel);
+    font-weight:600;font-size:14.5px;line-height:1.4;color:var(--text);cursor:pointer;white-space:pre-line;
   }
-  .consent-prefs-title{font-weight:700;margin:16px 0 8px;font-size:14.5px;}
-  .consent-checks{display:flex;flex-wrap:wrap;gap:22px;border:1px solid var(--border);border-radius:8px;padding:14px 16px;background:var(--panel);}
+  .c-check input{width:22px;height:22px;flex-shrink:0;margin:0;accent-color:var(--teal);}
+  .c-check.missing{border-color:var(--danger);background:#fdecea;}
+  .c-check .req{color:var(--danger);}
   .check-item{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14.5px;cursor:pointer;}
   .check-item input{width:18px;height:18px;}
-  .consent-actions{display:flex;gap:14px;margin-top:18px;}
+  .consent-actions{display:flex;gap:14px;margin-top:18px;position:sticky;bottom:0;background:#fff;padding:12px 0 4px;}
   .consent-actions .btn{flex:1;}
+
+  /* Lock screen (device not connected yet) */
+  .lock-card{text-align:center;max-width:560px;margin:40px auto;padding:34px 24px;}
+  .lock-icon{font-size:54px;line-height:1;margin-bottom:10px;}
+  .lock-card h2{margin:0 0 10px;color:var(--text);}
+  .lock-card p{color:var(--muted);line-height:1.5;margin:0 0 22px;white-space:pre-line;}
 
   /* Modal */
   .modal-overlay{
@@ -130,6 +149,7 @@
     align-items:center;justify-content:center;z-index:200;padding:16px;
   }
   .modal-overlay.show{display:flex;}
+  #modalOverlay{z-index:210;}
   .modal-box{background:#fff;border-radius:12px;padding:22px;max-width:420px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.25);}
   .modal-title{font-weight:800;font-size:17px;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
   .modal-title.warn{color:#c0392b;}
@@ -154,6 +174,60 @@
   .mini-danger{background:#fde3e0;color:#c0392b;}
   .empty-note{color:var(--muted);font-size:13.5px;padding:20px;text-align:center;}
   #backToFormBtn{margin-bottom:14px;}
+  .menu-btn.gear{padding:8px 10px;color:var(--muted);}
+  .brand{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+  .cloud-pill{font-size:12.5px;font-weight:700;color:#8a5a00;background:#fff2d9;border:1px solid #f0d495;border-radius:20px;padding:4px 10px;}
+  button:disabled{opacity:.6;cursor:default;}
+
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:16px;}
+  .tab-btn{background:none;border:none;border-bottom:3px solid transparent;padding:10px 12px;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;}
+  .tab-btn.active{color:var(--teal-dark);border-bottom-color:var(--teal);}
+  .hint{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:12px;white-space:pre-line;}
+  .pending-box{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff2d9;border:1px solid #f0d495;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:13.5px;font-weight:600;}
+  .badge{display:inline-block;font-size:11.5px;font-weight:700;border-radius:10px;padding:1px 8px;margin-left:6px;vertical-align:middle;}
+  .badge.done{background:#e3f6ec;color:var(--green-dark);}
+  .badge.pending{background:#fff2d9;color:#8a5a00;}
+
+  /* Terms & checkboxes editor */
+  .terms-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+  .terms-toolbar.bottom{margin:16px 0 0;padding-top:14px;border-top:1px solid var(--border);}
+  .terms-toolbar .btn{padding:10px 16px;font-size:14px;}
+  .dirty-flag{font-size:13px;font-weight:700;color:#b5541f;}
+  .te-section{margin-bottom:18px;}
+  .te-section-title{font-weight:800;font-size:15px;color:var(--teal-dark);margin:6px 0 8px;}
+  .te-card{border:1px solid var(--border);border-left:4px solid var(--teal);border-radius:8px;background:#fff;padding:10px 12px;}
+  .te-card.t-heading{border-left-color:#5b6cff;}
+  .te-card.t-checkbox{border-left-color:var(--green);}
+  .te-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+  .te-num{font-weight:800;color:var(--muted);font-size:13px;}
+  .te-head select{width:auto;padding:6px 8px;font-size:13px;}
+  .te-tools{margin-left:auto;display:flex;gap:4px;}
+  .te-tools button{border:1px solid var(--border);background:var(--panel);border-radius:6px;min-width:36px;height:34px;font-size:15px;cursor:pointer;}
+  .te-tools button:disabled{opacity:.35;cursor:default;}
+  .te-tools .del{color:#c0392b;}
+  .te-lang{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;}
+  .te-lang .flag{font-size:18px;line-height:34px;width:24px;text-align:center;flex-shrink:0;}
+  .te-lang textarea{min-height:38px;font-size:13.5px;}
+  .te-opts{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-top:6px;padding-top:8px;border-top:1px dashed var(--border);}
+  .te-opts label{display:flex;align-items:center;gap:6px;margin:0;font-weight:600;font-size:13px;}
+  .te-opts select, .te-opts input[type=text]{width:auto;padding:6px 8px;font-size:13px;}
+  .te-opts input[type=text]{width:190px;font-family:monospace;}
+  .te-opts input[type=checkbox]{width:18px;height:18px;}
+  .te-add{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:6px 0;}
+  .te-add button{border:1px dashed #b7c1c5;background:#fbfcfc;color:var(--muted);border-radius:6px;padding:5px 10px;font-size:12.5px;font-weight:700;cursor:pointer;}
+  .te-add button:hover{border-color:var(--teal);color:var(--teal-dark);}
+  .te-empty{font-size:13px;color:var(--muted);text-align:center;padding:8px;}
+
+  /* Connection & settings */
+  .settings-box{border:1px solid var(--border);border-radius:8px;padding:14px;background:var(--panel);margin-bottom:16px;}
+  .settings-title{font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .s-label{font-size:12.5px;margin:8px 0 3px;}
+  .s-input{width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:7px;font-size:14px;background:#fff;color:var(--text);font-family:inherit;}
+  .row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+  .row-actions .btn{padding:10px 14px;font-size:14px;}
+  .status-line{font-size:13px;margin-top:10px;line-height:1.5;white-space:pre-line;}
+  .preview-box{max-width:760px;max-height:88vh;overflow-y:auto;}
+  .preview-page{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:14px 0 8px;border-bottom:1px solid var(--border);padding-bottom:4px;}
 
   .field-required::after{content:" *";color:var(--danger);}
 </style>
@@ -161,11 +235,11 @@
 <body>
 
 <header>
-  <div class="brand"><span class="dot"></span> NordicFysio <span style="font-weight:400;color:var(--muted);font-size:13px;">— Anamnesis</span></div>
+  <div class="brand" id="brandLogo"><span class="dot"></span> NordicFysio <span style="font-weight:400;color:var(--muted);font-size:13px;">— Anamnesis</span></div>
   <div class="menu-bar">
+    <span class="cloud-pill" id="cloudPill" hidden></span>
     <button class="menu-btn" id="newBtn" type="button">⟳ <span id="txtMenuNew">New</span></button>
-    <button class="menu-btn" id="foldersBtn" type="button">📁 <span id="txtMenuFolders">Folders</span></button>
-    <button class="menu-btn admin" id="adminBtn" type="button">⚙ <span id="txtMenuAdmin">Admin</span></button>
+    <button class="menu-btn gear" id="adminBtn" type="button" title="Admin">⚙</button>
     <div class="flags">
       <button class="flag-btn active" data-lang="UK" title="English">🇬🇧</button>
       <button class="flag-btn" data-lang="ES" title="Español">🇪🇸</button>
@@ -175,6 +249,16 @@
 </header>
 
 <main>
+
+  <!-- ===================== LOCK SCREEN (device not connected yet) ===================== -->
+  <div id="lockScreen">
+    <div class="card lock-card">
+      <div class="lock-icon">🔒</div>
+      <h2 id="lockTitle">This device is not connected</h2>
+      <p id="lockBody"></p>
+      <button class="btn btn-teal btn-lg" id="unlockBtn" type="button">Unlock (admin)</button>
+    </div>
+  </div>
 
   <!-- ===================== FORM SCREEN ===================== -->
   <div id="formScreen">
@@ -264,6 +348,8 @@ How long have you had the problem/pain?</label>
             <label id="lblKnow">How did you know us?</label>
             <select id="cbKnow"><option value="">--</option></select>
           </div>
+          <!-- Admin-editable text / checkboxes for page 1 (Admin → Terms & checkboxes) -->
+          <div class="c-blocks" id="formBlocks"></div>
           <div class="field">
             <label id="lblSignature">Signature:</label>
             <div class="sig-wrap">
@@ -285,13 +371,8 @@ How long have you had the problem/pain?</label>
   <!-- ===================== CONSENT SCREEN ===================== -->
   <div id="consentScreen">
     <div class="card">
-      <div class="legal-text" id="legalText"></div>
-      <div class="consent-prefs-title" id="consentPrefsTitle">Select your communication preferences:</div>
-      <div class="consent-checks">
-        <label class="check-item"><input type="checkbox" id="chkEmail"><span id="lblChkEmail">Yes, Email</span></label>
-        <label class="check-item"><input type="checkbox" id="chkWhatsApp"><span id="lblChkWhatsApp">Yes, WhatsApp</span></label>
-        <label class="check-item"><input type="checkbox" id="chkPostal"><span id="lblChkPostal">Yes, postal mail</span></label>
-      </div>
+      <!-- Admin-editable text / checkboxes for page 2 (Admin → Terms & checkboxes) -->
+      <div class="c-blocks" id="consentBlocks"></div>
       <div class="consent-actions">
         <button class="btn btn-pink btn-lg" id="backBtn" type="button">BACK</button>
         <button class="btn btn-green btn-lg" id="agreeBtn" type="button">I AGREE</button>
@@ -303,8 +384,92 @@ How long have you had the problem/pain?</label>
   <div id="adminPanel">
     <div class="card">
       <button class="menu-btn" id="backToFormBtn" type="button">← Back to form</button>
-      <h3 style="margin-top:0;">Saved patients (this device)</h3>
-      <div id="patientList"></div>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="patients" type="button" id="tabBtnPatients">Patients</button>
+        <button class="tab-btn" data-tab="terms" type="button" id="tabBtnTerms">Terms &amp; checkboxes</button>
+        <button class="tab-btn" data-tab="settings" type="button" id="tabBtnSettings">Connection &amp; settings</button>
+      </div>
+
+      <!-- Patients -->
+      <div class="tab-pane" id="tabPatients">
+        <h3 style="margin-top:0;" id="savedPatientsTitle">Saved patients (this device)</h3>
+        <div id="pendingBox" class="pending-box" hidden>
+          <span id="pendingText"></span>
+          <button class="mini-btn mini-teal" id="uploadNowBtn" type="button">Upload now</button>
+        </div>
+        <div id="patientList"></div>
+      </div>
+
+      <!-- Terms & checkboxes editor -->
+      <div class="tab-pane" id="tabTerms" hidden>
+        <div class="hint" id="termsIntro"></div>
+        <div class="terms-toolbar">
+          <button class="btn btn-green" id="termsSaveBtn" type="button">Save</button>
+          <button class="btn btn-teal" id="termsPreviewBtn" type="button">Preview</button>
+          <button class="btn btn-outline" id="termsDiscardBtn" type="button">Discard changes</button>
+          <span class="dirty-flag" id="termsDirtyFlag"></span>
+        </div>
+        <div id="termsEditor"></div>
+        <div class="terms-toolbar bottom">
+          <button class="btn btn-green" id="termsSaveBtn2" type="button">Save</button>
+          <button class="menu-btn" id="termsExportBtn" type="button">Export to file</button>
+          <button class="menu-btn" id="termsImportBtn" type="button">Import from file</button>
+          <input type="file" id="termsImportInput" accept=".json,application/json" hidden>
+          <button class="menu-btn" id="termsRestoreBtn" type="button">Restore original text</button>
+        </div>
+      </div>
+
+      <!-- Connection & settings -->
+      <div class="tab-pane" id="tabSettings" hidden>
+        <div class="settings-box">
+          <div class="settings-title">☁️ <span id="cloudSectionTitle">Clinic cloud (Google Drive)</span></div>
+          <div class="hint" id="cloudSectionIntro"></div>
+          <label class="s-label" id="lblCloudUrl" for="cloudUrlInput">Web app address (/exec)</label>
+          <input type="text" id="cloudUrlInput" class="s-input" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" autocapitalize="off" spellcheck="false">
+          <label class="s-label" id="lblCloudSecret" for="cloudSecretInput">Secret key</label>
+          <input type="text" id="cloudSecretInput" class="s-input" autocomplete="off" autocapitalize="off" spellcheck="false">
+          <div class="row-actions">
+            <button class="btn btn-teal" id="cloudSaveTestBtn" type="button">Save &amp; test connection</button>
+            <button class="btn btn-outline" id="cloudDisconnectBtn" type="button">Disconnect</button>
+          </div>
+          <div class="status-line" id="cloudStatus"></div>
+        </div>
+
+        <div class="settings-box">
+          <div class="settings-title">💻 <span id="localSectionTitle">Local folders (Windows/Mac only)</span></div>
+          <div class="hint" id="folderModalIntro"></div>
+          <div class="patient-row" style="margin-bottom:10px;">
+            <div class="pinfo">
+              <b id="folderJsonLabel">Anamnesis (JSON)</b><br>
+              <span id="folderJsonStatus" style="color:var(--muted);">—</span>
+            </div>
+            <div class="pactions">
+              <button class="mini-btn mini-teal" id="pickJsonFolderBtn" type="button">Choose</button>
+            </div>
+          </div>
+          <div class="patient-row" style="margin-bottom:10px;">
+            <div class="pinfo">
+              <b id="folderPdfLabel">Patients consent (PDF)</b><br>
+              <span id="folderPdfStatus" style="color:var(--muted);">—</span>
+            </div>
+            <div class="pactions">
+              <button class="mini-btn mini-teal" id="pickPdfFolderBtn" type="button">Choose</button>
+            </div>
+          </div>
+          <label class="check-item"><input type="checkbox" id="localModeChk"><span id="lblLocalMode">Allow this device to work without the cloud</span></label>
+        </div>
+
+        <div class="settings-box">
+          <div class="settings-title">🔑 <span id="pwdSectionTitle">Admin password</span></div>
+          <label class="s-label" id="lblPwdNew" for="pwdNewInput">New password</label>
+          <input type="password" id="pwdNewInput" class="s-input" autocomplete="new-password">
+          <label class="s-label" id="lblPwdConfirm" for="pwdConfirmInput">Repeat new password</label>
+          <input type="password" id="pwdConfirmInput" class="s-input" autocomplete="new-password">
+          <div class="row-actions">
+            <button class="btn btn-teal" id="pwdChangeBtn" type="button">Change password</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -319,60 +484,13 @@ How long have you had the problem/pain?</label>
   </div>
 </div>
 
-<!-- Folder settings modal -->
-<div class="modal-overlay" id="folderOverlay">
-  <div class="modal-box" style="max-width:540px;">
-    <div class="modal-title" id="folderModalTitle">Save locations</div>
-
-    <div style="border:1px solid var(--border);border-radius:8px;padding:14px;background:var(--panel);margin-bottom:16px;">
-      <div style="font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:8px;">
-        <span style="font-size:18px;">☁️</span> <span id="driveSectionTitle">Google Drive (works on every device)</span>
-      </div>
-      <div class="modal-body" id="driveSectionIntro" style="margin-bottom:12px;font-size:13px;"></div>
-
-      <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:3px;" id="lblGClientId">Google Client ID</label>
-      <input type="text" id="gClientIdInput" placeholder="xxxxxxxx.apps.googleusercontent.com" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;margin-bottom:10px;font-size:13px;">
-
-      <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:3px;" id="lblJsonFolderId">Anamnesis (JSON) — Drive folder ID</label>
-      <input type="text" id="gJsonFolderIdInput" placeholder="1qCSVZ0HbaIijC3P1KA1hmEOzg9O9F1rj" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;margin-bottom:10px;font-size:13px;">
-
-      <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:3px;" id="lblPdfFolderId">Patients consent (PDF) — Drive folder ID</label>
-      <input type="text" id="gPdfFolderIdInput" placeholder="paste the folder ID from the Drive URL" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;margin-bottom:10px;font-size:13px;">
-
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <button class="btn btn-teal" id="saveDriveSettingsBtn" type="button" style="padding:9px 14px;font-size:13px;">Save</button>
-        <button class="btn btn-outline" id="connectDriveBtn" type="button" style="padding:9px 14px;font-size:13px;">Connect Google Drive</button>
-        <span id="driveStatus" style="font-size:12.5px;color:var(--muted);"></span>
-      </div>
-    </div>
-
-    <div style="border-top:1px solid var(--border);margin:6px 0 14px;"></div>
-    <div class="modal-body" id="folderModalIntro" style="margin-bottom:14px;font-size:13px;"></div>
-
-    <div class="patient-row" style="margin-bottom:10px;">
-      <div class="pinfo">
-        <b id="folderJsonLabel">Anamnesis (JSON) — local folder</b><br>
-        <span id="folderJsonStatus" style="color:var(--muted);">—</span>
-      </div>
-      <div class="pactions">
-        <button class="mini-btn mini-teal" id="pickJsonFolderBtn" type="button">Choose</button>
-      </div>
-    </div>
-
-    <div class="patient-row" style="margin-bottom:14px;">
-      <div class="pinfo">
-        <b id="folderPdfLabel">Patients consent (PDF) — local folder</b><br>
-        <span id="folderPdfStatus" style="color:var(--muted);">—</span>
-      </div>
-      <div class="pactions">
-        <button class="mini-btn mini-teal" id="pickPdfFolderBtn" type="button">Choose</button>
-      </div>
-    </div>
-
-    <div class="modal-body" id="folderMobileNote" style="font-size:12.5px;color:var(--muted);"></div>
-
+<!-- Terms preview modal -->
+<div class="modal-overlay" id="previewOverlay">
+  <div class="modal-box preview-box">
+    <div class="modal-title ok" id="previewTitle">Preview</div>
+    <div id="previewBlocks"></div>
     <div class="modal-actions">
-      <button class="btn btn-teal" id="folderCloseBtn" type="button">Close</button>
+      <button class="btn btn-teal" id="previewCloseBtn" type="button">Close</button>
     </div>
   </div>
 </div>
@@ -380,8 +498,8 @@ How long have you had the problem/pain?</label>
 <!-- Admin password modal -->
 <div class="modal-overlay" id="pwdOverlay">
   <div class="modal-box">
-    <div class="modal-title">Admin password required</div>
-    <input type="password" id="pwdInput" placeholder="Password">
+    <div class="modal-title" id="pwdTitle">Admin password required</div>
+    <input type="password" id="pwdInput" placeholder="Password" autocomplete="off">
     <div class="modal-actions">
       <button class="btn btn-outline" id="pwdCancel" type="button">Cancel</button>
       <button class="btn btn-teal" id="pwdOk" type="button">OK</button>
@@ -769,7 +887,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 /* =====================================================================
    NORDICFYSIO ANAMNESIS — self-contained cross-platform app
    Works on Windows / Android tablet / phone / iPad, any modern browser.
-   All data stays on the device (localStorage) + downloadable PDF/JSON.
+   Patient files go to the clinic's Google Drive through a Google Apps Script
+   web app (apps-script/Code.gs) — the device itself needs no Google login.
+   Consent text + checkboxes are edited in Admin, no code change needed.
 ===================================================================== */
 (function(){
 "use strict";
@@ -817,13 +937,62 @@ const UI = {
     folderPickedOk:"Folder connected. Files will now save there automatically.",
     folderPermDenied:"Permission was not granted, so this file could not be saved automatically. Use the Share/Download option instead.",
     shareTitle:"Save patient file",
-    driveSectionTitle:"Google Drive (works on every device)",
-    driveSectionIntro:"Works on Windows, Android and iPhone/iPad alike, as long as there is internet. Paste your Google Client ID and the two Drive folder IDs (open each folder in Drive and copy the ID from the browser address bar, the part after /folders/), then press Save, then Connect.",
-    lblGClientId:"Google Client ID", lblJsonFolderId:"Anamnesis (JSON) — Drive folder ID", lblPdfFolderId:"Patients consent (PDF) — Drive folder ID",
-    saveDriveSettings:"Save", connectDrive:"Connect Google Drive", driveConnected:"Connected to Google Drive",
-    driveNotConnected:"Not connected", driveSettingsSaved:"Settings saved.", driveConnectFirst:"Please fill in and save the Google Client ID first.",
-    driveConnectFailed:"Could not connect to Google Drive. Check the Client ID and that this site's address is added under \"Authorized JavaScript origins\" in Google Cloud Console.",
-    localFolderSectionIntro:"Alternative for Windows/Mac only (Chrome or Edge): pick your Google Drive for Desktop folders once below — files will then also save there directly, without going through the internet."
+    folderNeedsServer:"Folder picking only works when the app is opened from an https address (for example Netlify), not as a file from disk.",
+    folderPickError:"The folder could not be selected.",
+    pleaseTickRequired:"Please tick the boxes marked with * to continue.",
+    saving:"Saving…",
+    successCloud:"Patient record saved and sent to the clinic's cloud.",
+    successQueued:"Patient record saved on this device. It will be sent to the clinic's cloud automatically as soon as there is internet.",
+    successFolder:"Patient record saved in the selected folders.",
+    lockTitle:"This device is not connected",
+    lockBody:"This device is not connected to the clinic's cloud yet, so forms cannot be saved.\nPlease ask the administrator to connect it.",
+    unlockBtn:"Unlock (admin)", password:"Password",
+    tabPatients:"Patients", tabTerms:"Terms & checkboxes", tabSettings:"Connection & settings",
+    pendingUploads:"Waiting to be uploaded to the cloud: ", uploadNow:"Upload now",
+    badgeDone:"in cloud", badgePending:"waiting for upload",
+    uploadDone:"All records have been uploaded.", uploadFailed:"Upload failed. Check the internet connection and the connection settings, then try again.",
+    termsIntro:"Here you change the text and the checkboxes that patients read and sign — no programming and no app update needed.\n• Page 1 = the form (shown just above the signature). Page 2 = the screen with \"I AGREE\".\n• Use ↑ ↓ to choose exactly where each text or checkbox appears, ⇄ to move it to the other page, and the + buttons to insert new ones at that position.\n• Write each block in all three languages; if a language is left empty, the English text is shown. The PDF always contains the English text.\n• Press Save at the end. Devices connected to the cloud receive the change automatically.",
+    pageForm:"Page 1 — Form (above the signature)", pageConsent:"Page 2 — Consent (\"I AGREE\" screen)",
+    typeText:"Text", typeHeading:"Title", typeCheckbox:"Checkbox",
+    addText:"+ Text", addHeading:"+ Title", addCheckbox:"+ Checkbox",
+    moveUp:"Move up", moveDown:"Move down", movePage:"Move to the other page", deleteBlock:"Delete",
+    deleteBlockConfirm:"Delete this block?",
+    requiredLabel:"Mandatory (the patient cannot continue without ticking it)",
+    groupLabel:"Only one can be ticked in group:", groupNone:"— (independent)",
+    jsonKeyLabel:"Name in the JSON file:", jsonKeyAuto:"automatic",
+    emptyPage:"Nothing on this page yet.",
+    termsSave:"Save", termsPreview:"Preview", termsDiscard:"Discard changes",
+    termsExport:"Export to file", termsImport:"Import from file", termsRestore:"Restore original text",
+    unsavedChanges:"● Unsaved changes",
+    termsSavedCloud:"Saved. Every device connected to the cloud will receive the new text automatically.",
+    termsSavedPending:"Saved on this device. The cloud could not be reached right now — it will be sent automatically later.",
+    termsSavedLocal:"Saved on this device. This device is not connected to the cloud, so other devices will not receive it (use Export / Import to copy it).",
+    termsInvalid:"Please fix the following before saving:",
+    errEmptyText:"has no text in any language", errKeyInvalid:"the JSON name may only contain letters, digits and _ and must start with a letter",
+    errKeyDup:"the JSON name is used twice", errKeyReserved:"the JSON name is reserved for a form field",
+    blockWord:"block",
+    importOk:"File imported. Check the content and press Save.", importBad:"This file is not a valid terms file.",
+    restoreConfirm:"Replace the current blocks with the original NordicFysio text? Nothing changes until you press Save.",
+    discardConfirm:"Discard all unsaved changes?", leaveUnsaved:"You have unsaved changes in the terms. Leave without saving?",
+    previewTitle:"Preview",
+    cloudSectionTitle:"Clinic cloud (Google Drive)",
+    cloudSectionIntro:"Paste the Web app address (ending in /exec) and the secret key from Apps Script, then press \"Save & test connection\". This device does not need to be logged into Google.",
+    lblCloudUrl:"Web app address (/exec)", lblCloudSecret:"Secret key",
+    cloudSaveTest:"Save & test connection", cloudDisconnect:"Disconnect", cloudTesting:"Testing the connection…",
+    cloudConnected:"Connected", cloudNotConnected:"Not connected", cloudAccount:"Account", cloudFolders:"Folders",
+    cloudBadUrl:"The address must look like https://script.google.com/macros/s/…/exec",
+    cloudNeedSecret:"Please paste the secret key.",
+    cloudErrUnauthorized:"The secret key is wrong.",
+    cloudErrNetwork:"Could not reach the script. Check the internet connection, that the address ends in /exec and that the deployment has \"Who has access: Anyone\".",
+    cloudErrFolder:"The script works, but it cannot open the Drive folders. Check the folder IDs in Code.gs and that the script belongs to the clinic's Gmail account.",
+    cloudErrSetup:"The script has no secret key yet. In Apps Script run testSetup once, then deploy again.",
+    cloudDisconnectConfirm:"Disconnect this device from the cloud? Patients will not be able to fill in forms until it is connected again.",
+    cloudOkBody:"Connection works. Patient files will be saved in the clinic's Google Drive.",
+    localSectionTitle:"Local folders (Windows/Mac only)",
+    localModeLabel:"Allow this device to work without the cloud (files are saved in the folders above or downloaded)",
+    pwdSectionTitle:"Admin password", pwdNew:"New password", pwdConfirm:"Repeat new password", pwdChange:"Change password",
+    pwdTooShort:"The password must have at least 6 characters.", pwdMismatch:"The two passwords are different.",
+    pwdChanged:"Password changed. Devices connected to the cloud receive it automatically."
   },
   ES: {
     firstName:"Nombre:", lastName:"Apellidos:", nationality:"Nacionalidad:",
@@ -866,13 +1035,62 @@ const UI = {
     folderPickedOk:"Carpeta conectada. Los archivos se guardarán ahí automáticamente.",
     folderPermDenied:"No se concedió el permiso, así que este archivo no se pudo guardar automáticamente. Use la opción de Compartir/Descargar.",
     shareTitle:"Guardar ficha del paciente",
-    driveSectionTitle:"Google Drive (funciona en cualquier dispositivo)",
-    driveSectionIntro:"Funciona igual en Windows, Android e iPhone/iPad, mientras haya internet. Pegue su ID de cliente de Google y los dos ID de carpeta de Drive (abra cada carpeta en Drive y copie el ID de la barra de direcciones, la parte después de /folders/), luego pulse Guardar y luego Conectar.",
-    lblGClientId:"ID de cliente de Google", lblJsonFolderId:"Anamnesis (JSON) — ID de carpeta de Drive", lblPdfFolderId:"Patients consent (PDF) — ID de carpeta de Drive",
-    saveDriveSettings:"Guardar", connectDrive:"Conectar Google Drive", driveConnected:"Conectado a Google Drive",
-    driveNotConnected:"No conectado", driveSettingsSaved:"Ajustes guardados.", driveConnectFirst:"Por favor, complete y guarde primero el ID de cliente de Google.",
-    driveConnectFailed:"No se pudo conectar a Google Drive. Compruebe el ID de cliente y que la dirección de este sitio esté añadida en \"Authorized JavaScript origins\" en Google Cloud Console.",
-    localFolderSectionIntro:"Alternativa solo para Windows/Mac (Chrome o Edge): elija abajo, una sola vez, sus carpetas de Google Drive para escritorio — los archivos también se guardarán ahí directamente, sin pasar por internet."
+    folderNeedsServer:"Elegir carpeta solo funciona cuando la aplicación se abre desde una dirección https (por ejemplo Netlify), no como archivo desde el disco.",
+    folderPickError:"No se pudo seleccionar la carpeta.",
+    pleaseTickRequired:"Por favor, marque las casillas indicadas con * para continuar.",
+    saving:"Guardando…",
+    successCloud:"Ficha del paciente guardada y enviada a la nube de la clínica.",
+    successQueued:"Ficha del paciente guardada en este dispositivo. Se enviará automáticamente a la nube de la clínica en cuanto haya internet.",
+    successFolder:"Ficha del paciente guardada en las carpetas seleccionadas.",
+    lockTitle:"Este dispositivo no está conectado",
+    lockBody:"Este dispositivo todavía no está conectado a la nube de la clínica, por lo que no se pueden guardar formularios.\nPida al administrador que lo conecte.",
+    unlockBtn:"Desbloquear (admin)", password:"Contraseña",
+    tabPatients:"Pacientes", tabTerms:"Términos y casillas", tabSettings:"Conexión y ajustes",
+    pendingUploads:"Pendientes de subir a la nube: ", uploadNow:"Subir ahora",
+    badgeDone:"en la nube", badgePending:"pendiente de subir",
+    uploadDone:"Todos los registros se han subido.", uploadFailed:"La subida ha fallado. Compruebe la conexión a internet y los ajustes de conexión e inténtelo de nuevo.",
+    termsIntro:"Aquí cambia el texto y las casillas que los pacientes leen y firman, sin programar y sin actualizar la aplicación.\n• Página 1 = el formulario (se muestra justo encima de la firma). Página 2 = la pantalla con \"ACEPTO\".\n• Use ↑ ↓ para elegir exactamente dónde aparece cada texto o casilla, ⇄ para pasarlo a la otra página y los botones + para insertar nuevos en esa posición.\n• Escriba cada bloque en los tres idiomas; si un idioma queda vacío, se muestra el texto en inglés. El PDF siempre contiene el texto en inglés.\n• Pulse Guardar al final. Los dispositivos conectados a la nube reciben el cambio automáticamente.",
+    pageForm:"Página 1 — Formulario (encima de la firma)", pageConsent:"Página 2 — Consentimiento (pantalla \"ACEPTO\")",
+    typeText:"Texto", typeHeading:"Título", typeCheckbox:"Casilla",
+    addText:"+ Texto", addHeading:"+ Título", addCheckbox:"+ Casilla",
+    moveUp:"Subir", moveDown:"Bajar", movePage:"Mover a la otra página", deleteBlock:"Eliminar",
+    deleteBlockConfirm:"¿Eliminar este bloque?",
+    requiredLabel:"Obligatoria (el paciente no puede continuar sin marcarla)",
+    groupLabel:"Solo se puede marcar una en el grupo:", groupNone:"— (independiente)",
+    jsonKeyLabel:"Nombre en el archivo JSON:", jsonKeyAuto:"automático",
+    emptyPage:"Todavía no hay nada en esta página.",
+    termsSave:"Guardar", termsPreview:"Vista previa", termsDiscard:"Descartar cambios",
+    termsExport:"Exportar a archivo", termsImport:"Importar desde archivo", termsRestore:"Restaurar texto original",
+    unsavedChanges:"● Cambios sin guardar",
+    termsSavedCloud:"Guardado. Todos los dispositivos conectados a la nube recibirán el nuevo texto automáticamente.",
+    termsSavedPending:"Guardado en este dispositivo. Ahora no se ha podido contactar con la nube; se enviará automáticamente más tarde.",
+    termsSavedLocal:"Guardado en este dispositivo. Este dispositivo no está conectado a la nube, así que los demás no lo recibirán (use Exportar / Importar para copiarlo).",
+    termsInvalid:"Corrija lo siguiente antes de guardar:",
+    errEmptyText:"no tiene texto en ningún idioma", errKeyInvalid:"el nombre JSON solo puede contener letras, números y _ y debe empezar por una letra",
+    errKeyDup:"el nombre JSON se usa dos veces", errKeyReserved:"el nombre JSON está reservado para un campo del formulario",
+    blockWord:"bloque",
+    importOk:"Archivo importado. Revise el contenido y pulse Guardar.", importBad:"Este archivo no es un archivo de términos válido.",
+    restoreConfirm:"¿Sustituir los bloques actuales por el texto original de NordicFysio? No cambia nada hasta que pulse Guardar.",
+    discardConfirm:"¿Descartar todos los cambios sin guardar?", leaveUnsaved:"Hay cambios sin guardar en los términos. ¿Salir sin guardar?",
+    previewTitle:"Vista previa",
+    cloudSectionTitle:"Nube de la clínica (Google Drive)",
+    cloudSectionIntro:"Pegue la dirección de la aplicación web (termina en /exec) y la clave secreta de Apps Script y pulse \"Guardar y probar conexión\". Este dispositivo no necesita tener sesión iniciada en Google.",
+    lblCloudUrl:"Dirección de la aplicación web (/exec)", lblCloudSecret:"Clave secreta",
+    cloudSaveTest:"Guardar y probar conexión", cloudDisconnect:"Desconectar", cloudTesting:"Probando la conexión…",
+    cloudConnected:"Conectado", cloudNotConnected:"No conectado", cloudAccount:"Cuenta", cloudFolders:"Carpetas",
+    cloudBadUrl:"La dirección debe tener la forma https://script.google.com/macros/s/…/exec",
+    cloudNeedSecret:"Por favor, pegue la clave secreta.",
+    cloudErrUnauthorized:"La clave secreta no es correcta.",
+    cloudErrNetwork:"No se pudo contactar con el script. Compruebe la conexión a internet, que la dirección termine en /exec y que la implementación tenga \"Who has access: Anyone\".",
+    cloudErrFolder:"El script funciona, pero no puede abrir las carpetas de Drive. Compruebe los ID de carpeta en Code.gs y que el script pertenezca a la cuenta Gmail de la clínica.",
+    cloudErrSetup:"El script todavía no tiene clave secreta. En Apps Script ejecute testSetup una vez y vuelva a implementar.",
+    cloudDisconnectConfirm:"¿Desconectar este dispositivo de la nube? Los pacientes no podrán rellenar formularios hasta que se vuelva a conectar.",
+    cloudOkBody:"La conexión funciona. Los archivos de los pacientes se guardarán en el Google Drive de la clínica.",
+    localSectionTitle:"Carpetas locales (solo Windows/Mac)",
+    localModeLabel:"Permitir que este dispositivo funcione sin la nube (los archivos se guardan en las carpetas de arriba o se descargan)",
+    pwdSectionTitle:"Contraseña de administrador", pwdNew:"Nueva contraseña", pwdConfirm:"Repita la nueva contraseña", pwdChange:"Cambiar contraseña",
+    pwdTooShort:"La contraseña debe tener al menos 6 caracteres.", pwdMismatch:"Las dos contraseñas no coinciden.",
+    pwdChanged:"Contraseña cambiada. Los dispositivos conectados a la nube la reciben automáticamente."
   },
   FR: {
     firstName:"Prénom:", lastName:"Nom:", nationality:"Nationalité:",
@@ -915,13 +1133,62 @@ const UI = {
     folderPickedOk:"Dossier connecté. Les fichiers y seront désormais enregistrés automatiquement.",
     folderPermDenied:"L'autorisation n'a pas été accordée, ce fichier n'a donc pas pu être enregistré automatiquement. Utilisez l'option Partager/Télécharger.",
     shareTitle:"Enregistrer la fiche patient",
-    driveSectionTitle:"Google Drive (fonctionne sur tous les appareils)",
-    driveSectionIntro:"Fonctionne pareil sur Windows, Android et iPhone/iPad, tant qu'il y a internet. Collez votre ID client Google et les deux ID de dossier Drive (ouvrez chaque dossier dans Drive et copiez l'ID dans la barre d'adresse, la partie après /folders/), puis cliquez sur Enregistrer puis Connecter.",
-    lblGClientId:"ID client Google", lblJsonFolderId:"Anamnesis (JSON) — ID du dossier Drive", lblPdfFolderId:"Patients consent (PDF) — ID du dossier Drive",
-    saveDriveSettings:"Enregistrer", connectDrive:"Connecter Google Drive", driveConnected:"Connecté à Google Drive",
-    driveNotConnected:"Non connecté", driveSettingsSaved:"Paramètres enregistrés.", driveConnectFirst:"Veuillez d'abord renseigner et enregistrer l'ID client Google.",
-    driveConnectFailed:"Impossible de se connecter à Google Drive. Vérifiez l'ID client et que l'adresse de ce site est ajoutée dans \"Authorized JavaScript origins\" de Google Cloud Console.",
-    localFolderSectionIntro:"Alternative pour Windows/Mac uniquement (Chrome ou Edge) : choisissez ci-dessous, une seule fois, vos dossiers Google Drive pour ordinateur — les fichiers s'y enregistreront aussi directement, sans passer par internet."
+    folderNeedsServer:"Le choix de dossier ne fonctionne que si l'application est ouverte depuis une adresse https (par exemple Netlify), pas comme fichier sur le disque.",
+    folderPickError:"Le dossier n'a pas pu être sélectionné.",
+    pleaseTickRequired:"Veuillez cocher les cases marquées d'un * pour continuer.",
+    saving:"Enregistrement…",
+    successCloud:"Fiche patient enregistrée et envoyée dans le cloud de la clinique.",
+    successQueued:"Fiche patient enregistrée sur cet appareil. Elle sera envoyée automatiquement dans le cloud de la clinique dès qu'il y aura internet.",
+    successFolder:"Fiche patient enregistrée dans les dossiers sélectionnés.",
+    lockTitle:"Cet appareil n'est pas connecté",
+    lockBody:"Cet appareil n'est pas encore connecté au cloud de la clinique, les formulaires ne peuvent donc pas être enregistrés.\nDemandez à l'administrateur de le connecter.",
+    unlockBtn:"Déverrouiller (admin)", password:"Mot de passe",
+    tabPatients:"Patients", tabTerms:"Conditions et cases", tabSettings:"Connexion et paramètres",
+    pendingUploads:"En attente d'envoi dans le cloud : ", uploadNow:"Envoyer maintenant",
+    badgeDone:"dans le cloud", badgePending:"en attente d'envoi",
+    uploadDone:"Toutes les fiches ont été envoyées.", uploadFailed:"L'envoi a échoué. Vérifiez la connexion internet et les paramètres de connexion, puis réessayez.",
+    termsIntro:"Ici vous modifiez le texte et les cases que les patients lisent et signent, sans programmation ni mise à jour de l'application.\n• Page 1 = le formulaire (affiché juste au-dessus de la signature). Page 2 = l'écran avec \"J'ACCEPTE\".\n• Utilisez ↑ ↓ pour choisir exactement où apparaît chaque texte ou case, ⇄ pour le passer sur l'autre page, et les boutons + pour en insérer de nouveaux à cet endroit.\n• Écrivez chaque bloc dans les trois langues ; si une langue est vide, le texte anglais est affiché. Le PDF contient toujours le texte anglais.\n• Appuyez sur Enregistrer à la fin. Les appareils connectés au cloud reçoivent la modification automatiquement.",
+    pageForm:"Page 1 — Formulaire (au-dessus de la signature)", pageConsent:"Page 2 — Consentement (écran \"J'ACCEPTE\")",
+    typeText:"Texte", typeHeading:"Titre", typeCheckbox:"Case à cocher",
+    addText:"+ Texte", addHeading:"+ Titre", addCheckbox:"+ Case",
+    moveUp:"Monter", moveDown:"Descendre", movePage:"Déplacer vers l'autre page", deleteBlock:"Supprimer",
+    deleteBlockConfirm:"Supprimer ce bloc ?",
+    requiredLabel:"Obligatoire (le patient ne peut pas continuer sans la cocher)",
+    groupLabel:"Une seule peut être cochée dans le groupe :", groupNone:"— (indépendante)",
+    jsonKeyLabel:"Nom dans le fichier JSON :", jsonKeyAuto:"automatique",
+    emptyPage:"Rien sur cette page pour l'instant.",
+    termsSave:"Enregistrer", termsPreview:"Aperçu", termsDiscard:"Annuler les modifications",
+    termsExport:"Exporter vers un fichier", termsImport:"Importer depuis un fichier", termsRestore:"Restaurer le texte d'origine",
+    unsavedChanges:"● Modifications non enregistrées",
+    termsSavedCloud:"Enregistré. Tous les appareils connectés au cloud recevront le nouveau texte automatiquement.",
+    termsSavedPending:"Enregistré sur cet appareil. Le cloud n'est pas joignable pour le moment ; il sera envoyé automatiquement plus tard.",
+    termsSavedLocal:"Enregistré sur cet appareil. Cet appareil n'est pas connecté au cloud, les autres appareils ne le recevront donc pas (utilisez Exporter / Importer pour le copier).",
+    termsInvalid:"Veuillez corriger ce qui suit avant d'enregistrer :",
+    errEmptyText:"n'a de texte dans aucune langue", errKeyInvalid:"le nom JSON ne peut contenir que des lettres, des chiffres et _ et doit commencer par une lettre",
+    errKeyDup:"le nom JSON est utilisé deux fois", errKeyReserved:"le nom JSON est réservé à un champ du formulaire",
+    blockWord:"bloc",
+    importOk:"Fichier importé. Vérifiez le contenu puis appuyez sur Enregistrer.", importBad:"Ce fichier n'est pas un fichier de conditions valide.",
+    restoreConfirm:"Remplacer les blocs actuels par le texte d'origine de NordicFysio ? Rien ne change tant que vous n'appuyez pas sur Enregistrer.",
+    discardConfirm:"Annuler toutes les modifications non enregistrées ?", leaveUnsaved:"Des modifications des conditions ne sont pas enregistrées. Quitter sans enregistrer ?",
+    previewTitle:"Aperçu",
+    cloudSectionTitle:"Cloud de la clinique (Google Drive)",
+    cloudSectionIntro:"Collez l'adresse de l'application web (se termine par /exec) et la clé secrète d'Apps Script, puis appuyez sur \"Enregistrer et tester la connexion\". Cet appareil n'a pas besoin d'être connecté à Google.",
+    lblCloudUrl:"Adresse de l'application web (/exec)", lblCloudSecret:"Clé secrète",
+    cloudSaveTest:"Enregistrer et tester la connexion", cloudDisconnect:"Déconnecter", cloudTesting:"Test de la connexion…",
+    cloudConnected:"Connecté", cloudNotConnected:"Non connecté", cloudAccount:"Compte", cloudFolders:"Dossiers",
+    cloudBadUrl:"L'adresse doit avoir la forme https://script.google.com/macros/s/…/exec",
+    cloudNeedSecret:"Veuillez coller la clé secrète.",
+    cloudErrUnauthorized:"La clé secrète est incorrecte.",
+    cloudErrNetwork:"Impossible de joindre le script. Vérifiez la connexion internet, que l'adresse se termine par /exec et que le déploiement a \"Who has access: Anyone\".",
+    cloudErrFolder:"Le script fonctionne, mais il ne peut pas ouvrir les dossiers Drive. Vérifiez les ID de dossier dans Code.gs et que le script appartient au compte Gmail de la clinique.",
+    cloudErrSetup:"Le script n'a pas encore de clé secrète. Dans Apps Script, exécutez testSetup une fois, puis redéployez.",
+    cloudDisconnectConfirm:"Déconnecter cet appareil du cloud ? Les patients ne pourront plus remplir de formulaires tant qu'il ne sera pas reconnecté.",
+    cloudOkBody:"La connexion fonctionne. Les fichiers des patients seront enregistrés dans le Google Drive de la clinique.",
+    localSectionTitle:"Dossiers locaux (Windows/Mac uniquement)",
+    localModeLabel:"Autoriser cet appareil à fonctionner sans le cloud (les fichiers sont enregistrés dans les dossiers ci-dessus ou téléchargés)",
+    pwdSectionTitle:"Mot de passe administrateur", pwdNew:"Nouveau mot de passe", pwdConfirm:"Répétez le nouveau mot de passe", pwdChange:"Changer le mot de passe",
+    pwdTooShort:"Le mot de passe doit contenir au moins 6 caractères.", pwdMismatch:"Les deux mots de passe sont différents.",
+    pwdChanged:"Mot de passe changé. Les appareils connectés au cloud le reçoivent automatiquement."
   }
 };
 
@@ -1013,11 +1280,31 @@ const COUNTRIES = {
 let currentLang = "UK";
 let residentValue = "";
 let hasSignature = false;
+let signatureSnapshot = "";
 let adminUnlocked = false;
+let saving = false;
 const STORAGE_KEY = "nordicfysio_anamnesis_patients";
+const CONFIG_KEY = "nordicfysio_config";
+const CLOUD_KEY = "nordicfysio_cloud";
+const LOCAL_MODE_KEY = "nordicfysio_local_mode";
+const LANGS = ['UK','ES','FR'];
+const FLAGS = {UK:'🇬🇧', ES:'🇪🇸', FR:'🇫🇷'};
+// SHA-256 of the original admin password; replaced by Admin → Connection & settings → Admin password
+const DEFAULT_ADMIN_HASH = '3a460343b3c834a7b8b408ef3ec3f96f53f0dd87b08dc0ee79cead009c13b1f2';
 
 /* ---------------------- DOM SHORTCUTS ---------------------- */
 const $ = id => document.getElementById(id);
+function tr(key){
+  const v = UI[currentLang][key];
+  return v !== undefined ? v : (UI.UK[key] !== undefined ? UI.UK[key] : key);
+}
+function el(tag, cls, text){
+  const e = document.createElement(tag);
+  if(cls) e.className = cls;
+  if(text !== undefined) e.textContent = text;
+  return e;
+}
+function deepCopy(o){ return JSON.parse(JSON.stringify(o)); }
 
 /* ---------------------- MODAL HELPERS ---------------------- */
 function showModal(title, body, buttons, isWarn){
@@ -1040,12 +1327,183 @@ function alertModal(title, body){
   const t = UI[currentLang];
   showModal(title, body, [{label:t.ok, cls:'btn-teal'}], true);
 }
+function okModal(title, body){
+  const t = UI[currentLang];
+  showModal(title, body, [{label:t.ok, cls:'btn-teal'}], false);
+}
 function confirmModal(title, body, onYes){
   const t = UI[currentLang];
   showModal(title, body, [
     {label:t.cancel, cls:'btn-outline'},
     {label:t.yes, cls:'btn-teal', onClick:onYes}
   ], true);
+}
+
+/* ---------------------- SHA-256 (admin password check, works offline and from file://) ---------------------- */
+function sha256(str){
+  const K = new Uint32Array([
+    0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+    0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+    0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+    0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+    0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+    0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+    0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+    0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2]);
+  const bytes = new TextEncoder().encode(String(str));
+  const len = bytes.length;
+  const total = ((len + 9 + 63) >> 6) << 6;
+  const m = new Uint8Array(total);
+  m.set(bytes); m[len] = 0x80;
+  const dv = new DataView(m.buffer);
+  dv.setUint32(total - 8, Math.floor(len / 0x20000000));
+  dv.setUint32(total - 4, (len * 8) >>> 0);
+  const H = new Uint32Array([0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19]);
+  const W = new Uint32Array(64);
+  const rotr = (x,n) => (x>>>n) | (x<<(32-n));
+  for(let off=0; off<total; off+=64){
+    for(let i=0;i<16;i++) W[i] = dv.getUint32(off + i*4);
+    for(let i=16;i<64;i++){
+      const s0 = rotr(W[i-15],7) ^ rotr(W[i-15],18) ^ (W[i-15]>>>3);
+      const s1 = rotr(W[i-2],17) ^ rotr(W[i-2],19) ^ (W[i-2]>>>10);
+      W[i] = (W[i-16] + s0 + W[i-7] + s1) | 0;
+    }
+    let a=H[0], b=H[1], c=H[2], d=H[3], e=H[4], f=H[5], g=H[6], h=H[7];
+    for(let i=0;i<64;i++){
+      const t1 = (h + (rotr(e,6) ^ rotr(e,11) ^ rotr(e,25)) + ((e & f) ^ (~e & g)) + K[i] + W[i]) | 0;
+      const t2 = ((rotr(a,2) ^ rotr(a,13) ^ rotr(a,22)) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+      h=g; g=f; f=e; e=(d + t1) | 0; d=c; c=b; b=a; a=(t1 + t2) | 0;
+    }
+    H[0]+=a; H[1]+=b; H[2]+=c; H[3]+=d; H[4]+=e; H[5]+=f; H[6]+=g; H[7]+=h;
+  }
+  return Array.from(H).map(x=>x.toString(16).padStart(8,'0')).join('');
+}
+
+/* ---------------------- TERMS & CHECKBOXES (editable in Admin, shared through the cloud) ---------------------- */
+// Each block is a piece of text or a checkbox shown on page 1 (form, above the signature)
+// or page 2 (consent screen), in the order of the list. Texts are per language (UK/ES/FR).
+function newId(){ return 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function buildDefaultBlocks(){
+  // The original NordicFysio consent text, with the three checkboxes placed where the text lists them
+  const intro = {}, outro = {}, lbl = k => ({UK:UI.UK[k], ES:UI.ES[k], FR:UI.FR[k]});
+  LANGS.forEach(l=>{
+    const marker = [UI[l].chkEmail, UI[l].chkWhatsApp, UI[l].chkPostal].join('\n') + '\n';
+    const i = LEGAL[l].indexOf(marker);
+    intro[l] = LEGAL[l].slice(0, i).replace(/\n$/, '');
+    outro[l] = LEGAL[l].slice(i + marker.length);
+  });
+  return [
+    {id:'intro', page:'consent', type:'text', text:intro},
+    {id:'email', page:'consent', type:'checkbox', key:'ConsentEmail', group:'A', required:false, text:lbl('chkEmail')},
+    {id:'whatsapp', page:'consent', type:'checkbox', key:'ConsentWhatsApp', group:'A', required:false, text:lbl('chkWhatsApp')},
+    {id:'postal', page:'consent', type:'checkbox', key:'ConsentPostal', group:'A', required:false, text:lbl('chkPostal')},
+    {id:'commercial', page:'consent', type:'text', text:outro}
+  ];
+}
+
+function normalizeBlocks(arr){
+  const out = [], ids = new Set();
+  (Array.isArray(arr) ? arr : []).forEach(raw=>{
+    if(!raw || typeof raw !== 'object') return;
+    const type = ['text','heading','checkbox'].includes(raw.type) ? raw.type : 'text';
+    let id = String(raw.id || '').replace(/[^A-Za-z0-9_-]/g, '');
+    if(!id || ids.has(id)) id = newId();
+    ids.add(id);
+    const src = (raw.text && typeof raw.text === 'object') ? raw.text : {};
+    const text = {};
+    LANGS.forEach(l=>{ text[l] = typeof src[l] === 'string' ? src[l] : ''; });
+    const b = {id, page: raw.page === 'form' ? 'form' : 'consent', type, text};
+    if(type === 'checkbox'){
+      b.key = String(raw.key || '').replace(/[^A-Za-z0-9_]/g, '');
+      b.group = ['A','B','C','D'].includes(raw.group) ? raw.group : '';
+      b.required = !!raw.required;
+    }
+    out.push(b);
+  });
+  return out;
+}
+
+function loadConfig(){
+  try{
+    const c = JSON.parse(localStorage.getItem(CONFIG_KEY));
+    if(c && Array.isArray(c.blocks)){
+      return {
+        updatedAt: typeof c.updatedAt === 'string' ? c.updatedAt : '',
+        adminHash: typeof c.adminHash === 'string' ? c.adminHash : '',
+        dirty: !!c.dirty,
+        blocks: normalizeBlocks(c.blocks)
+      };
+    }
+  }catch(e){}
+  return {updatedAt:'', adminHash:'', dirty:false, blocks:buildDefaultBlocks()};
+}
+function storeConfig(){
+  try{ localStorage.setItem(CONFIG_KEY, JSON.stringify(appConfig)); }
+  catch(e){ console.error('storeConfig failed', e); }
+}
+function exportableConfig(){
+  return {version:1, updatedAt:appConfig.updatedAt, adminHash:appConfig.adminHash, blocks:appConfig.blocks};
+}
+let appConfig = loadConfig();
+
+function pageBlocks(page, blocks){ return (blocks || appConfig.blocks).filter(b=>b.page===page); }
+function blockText(b, lang){
+  const t = b.text || {};
+  if(t[lang] && t[lang].trim()) return t[lang];
+  for(const l of LANGS){ if(t[l] && t[l].trim()) return t[l]; }
+  return '';
+}
+
+/* ---------------------- RENDER TEXT / CHECKBOX BLOCKS ---------------------- */
+let checkState = {}; // block id -> ticked, for the patient currently filling in the form
+
+// opts: {state, all: every block sharing checkbox groups, roots: containers to keep in sync}
+function renderBlocks(container, blocks, lang, opts){
+  container.innerHTML = '';
+  blocks.forEach(b=>{
+    if(b.type === 'heading'){ container.appendChild(el('div', 'c-heading', blockText(b, lang))); return; }
+    if(b.type === 'text'){ container.appendChild(el('div', 'c-text', blockText(b, lang))); return; }
+    const lab = el('label', 'c-check');
+    lab.dataset.bid = b.id;
+    const inp = document.createElement('input');
+    inp.type = 'checkbox';
+    inp.checked = !!opts.state[b.id];
+    inp.addEventListener('change', ()=>{
+      opts.state[b.id] = inp.checked;
+      if(inp.checked && b.group){
+        // boxes in the same group are mutually exclusive
+        opts.all.forEach(o=>{ if(o.id!==b.id && o.type==='checkbox' && o.group===b.group) opts.state[o.id] = false; });
+        opts.roots.forEach(r=> r.querySelectorAll('label.c-check').forEach(l=>{
+          l.querySelector('input').checked = !!opts.state[l.dataset.bid];
+        }));
+      }
+      lab.classList.remove('missing');
+    });
+    const span = el('span', '', blockText(b, lang));
+    if(b.required) span.appendChild(el('span', 'req', ' *'));
+    lab.appendChild(inp);
+    lab.appendChild(span);
+    container.appendChild(lab);
+  });
+}
+
+function renderLiveBlocks(){
+  const opts = {state:checkState, all:appConfig.blocks, roots:[$('formBlocks'), $('consentBlocks')]};
+  renderBlocks($('formBlocks'), pageBlocks('form'), currentLang, opts);
+  renderBlocks($('consentBlocks'), pageBlocks('consent'), currentLang, opts);
+}
+
+function missingRequired(blocks, state){
+  return blocks.filter(b=>b.type==='checkbox' && b.required && !state[b.id]);
+}
+function markMissing(root, missing){
+  let first = null;
+  missing.forEach(b=>{
+    const l = root.querySelector('label.c-check[data-bid="'+b.id+'"]');
+    if(l){ l.classList.add('missing'); if(!first) first = l; }
+  });
+  if(first) first.scrollIntoView({behavior:'smooth', block:'center'});
 }
 
 /* ---------------------- LANGUAGE / DROPDOWN POPULATION ---------------------- */
@@ -1089,6 +1547,7 @@ function populateDropdowns(lang){
 function applyLanguage(lang){
   currentLang = lang;
   const t = UI[lang];
+  document.documentElement.lang = {UK:'en', ES:'es', FR:'fr'}[lang];
   $('lblFirstName').textContent = t.firstName;
   $('lblLastName').textContent = t.lastName;
   $('lblNationality').textContent = t.nationality;
@@ -1110,40 +1569,65 @@ function applyLanguage(lang){
   $('clearSigBtn').textContent = t.newSignature;
   $('nextBtn').textContent = t.next;
   $('txtMenuNew').textContent = t.menuNew;
-  $('txtMenuAdmin').textContent = t.menuAdmin;
-  $('txtMenuFolders').textContent = t.menuFolders;
-  $('folderModalTitle').textContent = t.folderModalTitle;
-  $('folderJsonLabel').textContent = t.folderJsonLabel;
-  $('folderPdfLabel').textContent = t.folderPdfLabel;
-  $('pickJsonFolderBtn').textContent = t.chooseFolder;
-  $('pickPdfFolderBtn').textContent = t.chooseFolder;
-  $('folderCloseBtn').textContent = t.folderClose;
-  $('folderModalIntro').textContent = t.folderIntroDesktop;
-  $('folderMobileNote').textContent = ('showDirectoryPicker' in window) ? '' : t.folderIntroMobile;
-  $('driveSectionTitle').textContent = t.driveSectionTitle;
-  $('driveSectionIntro').textContent = t.driveSectionIntro;
-  $('lblGClientId').textContent = t.lblGClientId;
-  $('lblJsonFolderId').textContent = t.lblJsonFolderId;
-  $('lblPdfFolderId').textContent = t.lblPdfFolderId;
-  $('saveDriveSettingsBtn').textContent = t.saveDriveSettings;
-  $('connectDriveBtn').textContent = t.connectDrive;
-  if(typeof refreshDriveStatusUI === 'function') refreshDriveStatusUI();
-  if(typeof refreshFolderStatusUI === 'function') refreshFolderStatusUI();
   $('chipYes').textContent = t.residentYes;
   $('chipNo').textContent = t.residentNo;
-  $('consentPrefsTitle').textContent = t.consentPrefsTitle;
-  $('lblChkEmail').textContent = t.chkEmail;
-  $('lblChkWhatsApp').textContent = t.chkWhatsApp;
-  $('lblChkPostal').textContent = t.chkPostal;
   $('agreeBtn').textContent = t.agree;
   $('backBtn').textContent = t.back;
-  $('legalText').textContent = LEGAL[lang];
+  $('lockTitle').textContent = t.lockTitle;
+  $('lockBody').textContent = t.lockBody;
+  $('unlockBtn').textContent = t.unlockBtn;
+  $('pwdTitle').textContent = t.adminTitle;
+  $('pwdInput').placeholder = t.password;
+  $('pwdCancel').textContent = t.cancel;
+  $('pwdOk').textContent = t.ok;
+  applyAdminLanguage();
 
   document.querySelectorAll('.flag-btn').forEach(b=>{
     b.classList.toggle('active', b.dataset.lang===lang);
   });
 
   populateDropdowns(lang);
+  renderLiveBlocks();
+  refreshCloudPill();
+}
+
+function applyAdminLanguage(){
+  $('backToFormBtn').textContent = '← ' + tr('backToForm');
+  $('tabBtnPatients').textContent = tr('tabPatients');
+  $('tabBtnTerms').textContent = tr('tabTerms');
+  $('tabBtnSettings').textContent = tr('tabSettings');
+  $('savedPatientsTitle').textContent = tr('savedPatients');
+  $('uploadNowBtn').textContent = tr('uploadNow');
+  $('termsIntro').textContent = tr('termsIntro');
+  $('termsSaveBtn').textContent = tr('termsSave');
+  $('termsSaveBtn2').textContent = tr('termsSave');
+  $('termsPreviewBtn').textContent = tr('termsPreview');
+  $('termsDiscardBtn').textContent = tr('termsDiscard');
+  $('termsExportBtn').textContent = tr('termsExport');
+  $('termsImportBtn').textContent = tr('termsImport');
+  $('termsRestoreBtn').textContent = tr('termsRestore');
+  $('previewTitle').textContent = tr('previewTitle');
+  $('previewCloseBtn').textContent = tr('folderClose');
+  $('cloudSectionTitle').textContent = tr('cloudSectionTitle');
+  $('cloudSectionIntro').textContent = tr('cloudSectionIntro');
+  $('lblCloudUrl').textContent = tr('lblCloudUrl');
+  $('lblCloudSecret').textContent = tr('lblCloudSecret');
+  $('cloudSaveTestBtn').textContent = tr('cloudSaveTest');
+  $('cloudDisconnectBtn').textContent = tr('cloudDisconnect');
+  $('localSectionTitle').textContent = tr('localSectionTitle');
+  $('folderJsonLabel').textContent = tr('folderJsonLabel');
+  $('folderPdfLabel').textContent = tr('folderPdfLabel');
+  $('lblLocalMode').textContent = tr('localModeLabel');
+  $('pwdSectionTitle').textContent = tr('pwdSectionTitle');
+  $('lblPwdNew').textContent = tr('pwdNew');
+  $('lblPwdConfirm').textContent = tr('pwdConfirm');
+  $('pwdChangeBtn').textContent = tr('pwdChange');
+  if(adminUnlocked){
+    renderAdminPanel();
+    if(termsDraft) renderTermsEditor();
+    refreshCloudStatus();
+    refreshFolderStatusUI();
+  }
 }
 
 /* ---------------------- RESIDENT CHIPS (mutually exclusive) ---------------------- */
@@ -1207,6 +1691,7 @@ let drawing = false, lastX=0, lastY=0;
 
 function resizeCanvas(){
   const rect = canvas.getBoundingClientRect();
+  if(!rect.width) return; // form hidden (e.g. tablet rotated on the consent screen): keep the signature as it is
   const ratio = window.devicePixelRatio || 1;
   const imgData = hasSignature ? canvas.toDataURL() : null;
   canvas.width = rect.width * ratio;
@@ -1222,6 +1707,11 @@ function resizeCanvas(){
     img.onload = ()=> ctx.drawImage(img,0,0,rect.width,rect.height);
     img.src = imgData;
   }
+}
+function ensureCanvasSize(){
+  const rect = canvas.getBoundingClientRect();
+  const ratio = window.devicePixelRatio || 1;
+  if(rect.width && Math.round(rect.width*ratio) !== canvas.width) resizeCanvas();
 }
 window.addEventListener('resize', resizeCanvas);
 setTimeout(resizeCanvas, 50);
@@ -1270,6 +1760,19 @@ $('clearSigBtn').addEventListener('click', ()=>{
 document.querySelectorAll('.flag-btn').forEach(btn=>{
   btn.addEventListener('click', ()=> applyLanguage(btn.dataset.lang));
 });
+
+/* ---------------------- SCREENS ---------------------- */
+function showScreen(name){
+  $('lockScreen').style.display = name==='lock' ? 'block' : 'none';
+  $('formScreen').style.display = name==='form' ? 'block' : 'none';
+  $('consentScreen').style.display = name==='consent' ? 'block' : 'none';
+  $('adminPanel').style.display = name==='admin' ? 'block' : 'none';
+  if(name==='form') ensureCanvasSize();
+  window.scrollTo(0,0);
+}
+function deviceReady(){ return cloudConfigured() || localStorage.getItem(LOCAL_MODE_KEY)==='1'; }
+function showMain(){ showScreen(deviceReady() ? 'form' : 'lock'); }
+
 /* ---------------------- VALIDATION + NEXT BUTTON ---------------------- */
 $('nextBtn').addEventListener('click', ()=>{
   const t = UI[currentLang];
@@ -1297,31 +1800,32 @@ $('nextBtn').addEventListener('click', ()=>{
   if(dobCheck.reason==='past'){ alertModal(t.attention, t.dobPast); return; }
   if(dobCheck.reason==='invalid'){ alertModal(t.attention, t.dobInvalid); return; }
 
+  const missingChecks = missingRequired(pageBlocks('form'), checkState);
+  if(missingChecks.length){
+    markMissing($('formBlocks'), missingChecks);
+    alertModal(t.attention, tr('pleaseTickRequired'));
+    return;
+  }
+
   if(!hasSignature){
     alertModal(t.attention, t.pleaseSign);
     return;
   }
 
-  // reset consent checkboxes and show consent screen
-  $('chkEmail').checked=false; $('chkWhatsApp').checked=false; $('chkPostal').checked=false;
-  $('formScreen').style.display='none';
-  $('consentScreen').style.display='block';
-  window.scrollTo(0,0);
+  signatureSnapshot = canvas.toDataURL('image/png');
+  renderLiveBlocks();
+  showScreen('consent');
 });
 
-/* ---------------------- CONSENT CHECKBOXES (mutually exclusive) ---------------------- */
-$('chkEmail').addEventListener('change', function(){ if(this.checked){ $('chkWhatsApp').checked=false; $('chkPostal').checked=false; }});
-$('chkWhatsApp').addEventListener('change', function(){ if(this.checked){ $('chkEmail').checked=false; $('chkPostal').checked=false; }});
-$('chkPostal').addEventListener('change', function(){ if(this.checked){ $('chkEmail').checked=false; $('chkWhatsApp').checked=false; }});
-
-$('backBtn').addEventListener('click', ()=>{
-  $('consentScreen').style.display='none';
-  $('formScreen').style.display='block';
-  window.scrollTo(0,0);
-});
+$('backBtn').addEventListener('click', ()=> showScreen('form'));
 
 /* ---------------------- COLLECT PATIENT DATA ---------------------- */
 function collectPatientData(){
+  // Keep an exact copy of the text/checkboxes the patient saw, so the PDF can always be rebuilt as signed
+  const blocks = deepCopy(appConfig.blocks);
+  const checks = {};
+  blocks.forEach(b=>{ if(b.type==='checkbox') checks[b.id] = !!checkState[b.id]; });
+  const byKey = k => { const b = blocks.find(x=>x.type==='checkbox' && x.key===k); return b ? checks[b.id] : false; };
   return {
     id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
     savedAt: new Date().toISOString(),
@@ -1344,10 +1848,21 @@ function collectPatientData(){
     medical: $('txtMedical').value.trim(),
     mainProblem: $('txtMainProblem').value.trim(),
     know: $('cbKnow').value,
-    consentEmail: $('chkEmail').checked,
-    consentWhatsApp: $('chkWhatsApp').checked,
-    consentPostal: $('chkPostal').checked,
-    signatureDataUrl: canvas.toDataURL('image/png')
+    consentEmail: byKey('ConsentEmail'),
+    consentWhatsApp: byKey('ConsentWhatsApp'),
+    consentPostal: byKey('ConsentPostal'),
+    terms: { updatedAt: appConfig.updatedAt, blocks },
+    checks,
+    signatureDataUrl: signatureSnapshot || canvas.toDataURL('image/png')
+  };
+}
+
+// Text + ticks of a saved record (records from the previous app version had the fixed text and 3 boxes)
+function recordTerms(p){
+  if(p.terms && Array.isArray(p.terms.blocks)) return { blocks: p.terms.blocks, checks: p.checks || {} };
+  return {
+    blocks: buildDefaultBlocks(),
+    checks: { email: !!p.consentEmail, whatsapp: !!p.consentWhatsApp, postal: !!p.consentPostal }
   };
 }
 
@@ -1356,19 +1871,34 @@ function getAllPatients(){
   try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
   catch(e){ return []; }
 }
+function persistPatients(list){
+  for(;;){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); return true; }
+    catch(e){
+      // Storage full: make room by dropping the oldest records that are already safe in the cloud
+      const i = list.findIndex(p=>p.cloud==='done');
+      if(i < 0){ console.error('persistPatients failed', e); return false; }
+      list.splice(i, 1);
+    }
+  }
+}
 function savePatient(p){
   const list = getAllPatients();
   list.push(p);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  return persistPatients(list);
+}
+function updatePatient(id, patch){
+  const list = getAllPatients();
+  const p = list.find(x=>x.id===id);
+  if(p){ Object.assign(p, patch); persistPatients(list); }
 }
 function deletePatient(id){
-  const list = getAllPatients().filter(p=>p.id!==id);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  persistPatients(getAllPatients().filter(p=>p.id!==id));
 }
 
 /* ---------------------- EXPORT SCHEMA (matches the exact JSON shape used downstream) ---------------------- */
 function toExportJSON(p){
-  return {
+  const out = {
     FirstName: p.firstName,
     LastName: p.lastName,
     Email: p.email,
@@ -1386,11 +1916,15 @@ function toExportJSON(p){
     MedicalConditions: p.medical,
     Sex: p.sex,
     City: p.city,
-    ConsentEmail: p.consentEmail,
-    ConsentWhatsApp: p.consentWhatsApp,
-    ConsentPostal: p.consentPostal,
-    Prefix: p.prefix
+    ConsentEmail: false,
+    ConsentWhatsApp: false,
+    ConsentPostal: false
   };
+  // one true/false per checkbox, under its "Name in the JSON file" (the 3 original names always exist)
+  const rt = recordTerms(p);
+  rt.blocks.forEach(b=>{ if(b.type==='checkbox' && b.key) out[b.key] = !!rt.checks[b.id]; });
+  out.Prefix = p.prefix;
+  return out;
 }
 function safeName(s){ return String(s||'').trim().replace(/\s+/g,'_').replace(/[\\/:*?"<>|]/g,''); }
 function dateStamp(d){
@@ -1398,112 +1932,149 @@ function dateStamp(d){
   const pad = n=>String(n).padStart(2,'0');
   return `${dt.getFullYear()}${pad(dt.getMonth()+1)}${pad(dt.getDate())}_${pad(dt.getHours())}${pad(dt.getMinutes())}`;
 }
+function patientFiles(p){
+  return {
+    jsonBlob: new Blob([JSON.stringify(toExportJSON(p),null,2)], {type:'application/json'}),
+    pdfBlob: generatePDF(p).output('blob'),
+    jsonName: `Patient_${safeName(p.firstName)}_${safeName(p.lastName)}.json`,
+    pdfName: `Patient_${safeName(p.firstName)}_${safeName(p.lastName)}_${dateStamp(p.savedAt)}.pdf`
+  };
+}
 
-/* ---------------------- GOOGLE DRIVE INTEGRATION (works on Windows/Android/iOS — needs internet) ---------------------- */
-const DRIVE_SETTINGS_KEY = 'nordicfysio_drive_settings';
-let driveAccessToken = null;
-let driveTokenExpiry = 0;
-let gisTokenClient = null;
-
-function getDriveSettings(){
-  try{ return JSON.parse(localStorage.getItem(DRIVE_SETTINGS_KEY)) || {}; }
+/* ---------------------- CLINIC CLOUD (Google Apps Script web app → Google Drive; no Google login on the device) ---------------------- */
+function getCloud(){
+  try{ return JSON.parse(localStorage.getItem(CLOUD_KEY)) || {}; }
   catch(e){ return {}; }
 }
-function setDriveSettings(s){ localStorage.setItem(DRIVE_SETTINGS_KEY, JSON.stringify(s)); }
+function setCloud(c){ localStorage.setItem(CLOUD_KEY, JSON.stringify(c)); }
+function cloudConfigured(){ const c = getCloud(); return !!(c.url && c.secret); }
+const CLOUD_URL_RE = /^https:\/\/script\.google\.com\/(macros|a\/macros\/[^\/]+)\/s\/[A-Za-z0-9_-]+\/exec$/;
 
-function initDriveFieldsFromStorage(){
-  const s = getDriveSettings();
-  $('gClientIdInput').value = s.clientId || '';
-  $('gJsonFolderIdInput').value = s.jsonFolderId || '';
-  $('gPdfFolderIdInput').value = s.pdfFolderId || '';
-}
-
-$('saveDriveSettingsBtn').addEventListener('click', ()=>{
-  const t = UI[currentLang];
-  const s = {
-    clientId: $('gClientIdInput').value.trim(),
-    jsonFolderId: $('gJsonFolderIdInput').value.trim(),
-    pdfFolderId: $('gPdfFolderIdInput').value.trim()
-  };
-  setDriveSettings(s);
-  gisTokenClient = null; // force re-init with new client id next connect
-  driveAccessToken = null; driveTokenExpiry = 0;
-  refreshDriveStatusUI();
-  alertModal(t.successTitle, t.driveSettingsSaved);
-});
-
-function initGisClient(){
-  const s = getDriveSettings();
-  if(!s.clientId || !window.google || !google.accounts || !google.accounts.oauth2) return null;
-  gisTokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: s.clientId,
-    scope: 'https://www.googleapis.com/auth/drive',
-    callback: (resp)=>{
-      if(resp && resp.access_token){
-        driveAccessToken = resp.access_token;
-        driveTokenExpiry = Date.now() + ((resp.expires_in||3600)*1000) - 60000;
-      }
-      refreshDriveStatusUI();
-    }
-  });
-  return gisTokenClient;
-}
-
-$('connectDriveBtn').addEventListener('click', ()=>{
-  const t = UI[currentLang];
-  const s = getDriveSettings();
-  if(!s.clientId){ alertModal(t.attention, t.driveConnectFirst); return; }
-  if(!gisTokenClient) initGisClient();
-  if(!gisTokenClient){ alertModal(t.attention, t.driveConnectFailed); return; }
+async function cloudCall(action, payload, timeoutMs, override){
+  const c = override || getCloud();
+  if(!c.url || !c.secret) throw new Error('not-configured');
+  const ctrl = window.AbortController ? new AbortController() : null;
+  const timer = ctrl ? setTimeout(()=>ctrl.abort(), timeoutMs || 45000) : null;
   try{
-    gisTokenClient.requestAccessToken({ prompt: driveAccessToken ? '' : 'consent' });
-  }catch(e){ alertModal(t.attention, t.driveConnectFailed); }
-});
-
-async function ensureDriveToken(){
-  if(driveAccessToken && Date.now() < driveTokenExpiry) return driveAccessToken;
-  const s = getDriveSettings();
-  if(!s.clientId) return null;
-  if(!gisTokenClient) initGisClient();
-  if(!gisTokenClient) return null;
-  return new Promise((resolve)=>{
-    const originalCallback = gisTokenClient.callback;
-    gisTokenClient.callback = (resp)=>{
-      if(resp && resp.access_token){
-        driveAccessToken = resp.access_token;
-        driveTokenExpiry = Date.now() + ((resp.expires_in||3600)*1000) - 60000;
-        resolve(driveAccessToken);
-      } else resolve(null);
-      refreshDriveStatusUI();
-      gisTokenClient.callback = originalCallback;
-    };
-    try{ gisTokenClient.requestAccessToken({ prompt:'' }); }
-    catch(e){ resolve(null); }
-  });
-}
-
-async function uploadToDrive(folderId, filename, blob){
-  if(!folderId) return false;
-  const token = await ensureDriveToken();
-  if(!token) return false;
-  try{
-    const metadata = { name: filename, parents: [folderId] };
-    const form = new FormData();
-    form.append('metadata', new Blob([JSON.stringify(metadata)], { type:'application/json' }));
-    form.append('file', blob);
-    const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+    // plain-text body = "simple" request, so the browser needs no CORS preflight to reach Apps Script
+    const res = await fetch(c.url, {
       method: 'POST',
-      headers: { Authorization: 'Bearer ' + token },
-      body: form
+      body: JSON.stringify(Object.assign({}, payload || {}, { action, secret: c.secret })),
+      redirect: 'follow',
+      signal: ctrl ? ctrl.signal : undefined
     });
-    return res.ok;
-  }catch(e){ console.error('uploadToDrive failed', e); return false; }
+    const text = await res.text();
+    let data;
+    try{ data = JSON.parse(text); }catch(e){ throw new Error('bad-response'); }
+    if(!data || !data.ok) throw new Error((data && data.error) || 'error');
+    return data;
+  }finally{
+    if(timer) clearTimeout(timer);
+  }
+}
+function cloudErrorText(e){
+  const m = e && e.message;
+  if(m==='unauthorized') return tr('cloudErrUnauthorized');
+  if(m==='folder') return tr('cloudErrFolder');
+  if(m==='not-set-up') return tr('cloudErrSetup');
+  const technical = m && !/fetch|network|abort|bad-response|load failed|not-configured/i.test(m);
+  return tr('cloudErrNetwork') + (technical ? '\n\n(' + m + ')' : '');
+}
+function blobToBase64(blob){
+  return new Promise((resolve, reject)=>{
+    const r = new FileReader();
+    r.onload = ()=> resolve(String(r.result).split(',')[1] || '');
+    r.onerror = ()=> reject(r.error);
+    r.readAsDataURL(blob);
+  });
+}
+async function uploadPatient(p, timeoutMs){
+  const f = patientFiles(p);
+  await cloudCall('upload', {
+    id: p.id,
+    files: [
+      { kind:'json', name:f.jsonName, data: await blobToBase64(f.jsonBlob) },
+      { kind:'pdf', name:f.pdfName, data: await blobToBase64(f.pdfBlob) }
+    ]
+  }, timeoutMs || 90000);
 }
 
-function refreshDriveStatusUI(){
-  const t = UI[currentLang];
-  const connected = driveAccessToken && Date.now() < driveTokenExpiry;
-  $('driveStatus').textContent = connected ? ('✅ ' + t.driveConnected) : ('⚪ ' + t.driveNotConnected);
+/* ---------------------- UPLOAD QUEUE (records saved while offline are sent later, automatically) ---------------------- */
+function pendingCount(){ return getAllPatients().filter(p=>p.cloud==='pending').length; }
+function refreshCloudPill(){
+  const n = pendingCount();
+  const pill = $('cloudPill');
+  pill.hidden = n === 0;
+  pill.textContent = '⏳ ' + n;
+  pill.title = tr('pendingUploads') + n;
+  if(adminUnlocked) refreshPendingBox();
+}
+let flushRun = null;
+function flushPending(manual){
+  if(flushRun) return flushRun;
+  if(!cloudConfigured() || (!manual && navigator.onLine === false)) return Promise.resolve({uploaded:0, failed:0});
+  flushRun = (async ()=>{
+    let uploaded = 0, failed = 0, error = null;
+    for(const p of getAllPatients().filter(x=>x.cloud==='pending')){
+      try{
+        await uploadPatient(p);
+        updatePatient(p.id, { cloud:'done', uploadedAt:new Date().toISOString() });
+        uploaded++;
+      }catch(e){
+        failed++; error = e;
+        break; // no internet or wrong settings: try again later instead of hammering
+      }
+    }
+    return {uploaded, failed, error};
+  })().finally(()=>{ flushRun = null; refreshCloudPill(); });
+  return flushRun;
+}
+
+/* ---------------------- TERMS SYNC (edit once, every connected device gets it) ---------------------- */
+let configSyncRun = null, lastConfigSync = 0;
+function adoptConfig(remote){
+  appConfig = {
+    updatedAt: String(remote.updatedAt || ''),
+    adminHash: typeof remote.adminHash === 'string' ? remote.adminHash : '',
+    dirty: false,
+    blocks: normalizeBlocks(remote.blocks)
+  };
+  storeConfig();
+  renderLiveBlocks();
+  if(termsDraft && !termsDirty){
+    termsDraft = deepCopy(appConfig.blocks);
+    if(!$('tabTerms').hidden) renderTermsEditor();
+  }
+}
+function syncConfig(force){
+  if(configSyncRun) return force ? configSyncRun.then(()=>syncConfig(true)) : configSyncRun;
+  if(!cloudConfigured()) return Promise.resolve();
+  if(!force && (navigator.onLine === false || Date.now() - lastConfigSync < 5*60*1000)) return Promise.resolve();
+  lastConfigSync = Date.now();
+  configSyncRun = (async ()=>{
+    try{
+      const r = await cloudCall('getConfig', {}, 20000);
+      const remote = r.config && Array.isArray(r.config.blocks) ? r.config : null;
+      if(remote && String(remote.updatedAt || '') > (appConfig.updatedAt || '')){
+        adoptConfig(remote);
+      } else if(appConfig.dirty || (!remote && appConfig.updatedAt)){
+        await cloudCall('saveConfig', { config: exportableConfig() }, 20000);
+        appConfig.dirty = false;
+        storeConfig();
+      }
+    }catch(e){ console.warn('config sync failed', e); }
+  })().finally(()=>{ configSyncRun = null; });
+  return configSyncRun;
+}
+// Save the config on this device and push it to the cloud. Returns 'cloud', 'pending' or 'local'.
+async function commitConfig(){
+  appConfig.updatedAt = new Date().toISOString();
+  appConfig.dirty = true;
+  storeConfig();
+  renderLiveBlocks();
+  if(!cloudConfigured()) return 'local';
+  await syncConfig(true);
+  return appConfig.dirty ? 'pending' : 'cloud';
 }
 
 /* ---------------------- FOLDER PICKING (File System Access API — Windows/Mac desktop Chrome/Edge, local backup) ---------------------- */
@@ -1547,7 +2118,7 @@ async function pickFolder(kind){
     const handle = await window.showDirectoryPicker({ id: kind, mode: 'readwrite' });
     await idbSet(kind, handle);
     await refreshFolderStatusUI();
-    alertModal(t.successTitle, t.folderPickedOk);
+    okModal(t.successTitle, t.folderPickedOk);
   }catch(e){
     if(e && e.name === 'AbortError') return; // user closed the native dialog — normal, do nothing
     console.error('pickFolder failed', e);
@@ -1594,41 +2165,56 @@ async function refreshFolderStatusUI(){
 }
 
 /* ---------------------- SHARE / DOWNLOAD FALLBACK (Android / iOS / unsupported browsers) ---------------------- */
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
 async function shareOrDownload(blob, filename){
   try{
-
     const file = new File([blob], filename, { type: blob.type });
     if(navigator.canShare && navigator.canShare({ files:[file] })){
       await navigator.share({ files:[file], title: UI[currentLang].shareTitle });
       return true;
     }
   }catch(e){ /* share cancelled or failed — fall back to plain download below */ }
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  downloadBlob(blob, filename);
   return true;
 }
 
-/* ---------------------- FOLDER SETTINGS MODAL WIRING ---------------------- */
-$('foldersBtn').addEventListener('click', async ()=>{
-  initDriveFieldsFromStorage();
-  refreshDriveStatusUI();
-  await refreshFolderStatusUI();
-  $('folderOverlay').classList.add('show');
-});
-$('folderCloseBtn').addEventListener('click', ()=> $('folderOverlay').classList.remove('show'));
 $('pickJsonFolderBtn').addEventListener('click', ()=> pickFolder('anamnesis'));
 $('pickPdfFolderBtn').addEventListener('click', ()=> pickFolder('consent'));
 
 /* ---------------------- PDF GENERATION ---------------------- */
+// jsPDF's built-in Helvetica only has Western-European (Latin-1) letters: typographic signs are
+// swapped for plain ones, other accented letters (e.g. Romanian ș ț ă) lose the accent, anything else becomes "?".
+const PDF_REPLACE = {'‘':"'", '’':"'", '‚':"'", '‛':"'", '“':'"', '”':'"', '„':'"', '–':'-', '—':'-', '‐':'-', '−':'-',
+  '…':'...', '•':'-', '€':'EUR', '™':'TM', ' ':' ', ' ':' ', '\t':' ', '\r':''};
+function pdfSafe(s){
+  const isLatin1 = c => c===10 || (c>=32 && c<=126) || (c>=160 && c<=255);
+  return Array.from(String(s == null ? '' : s)).map(ch=>{
+    if(PDF_REPLACE[ch] !== undefined) return PDF_REPLACE[ch];
+    if(isLatin1(ch.codePointAt(0))) return ch;
+    const base = ch.normalize('NFD').replace(/[̀-ͯ]/g, '');
+    return (base && Array.from(base).every(x=>isLatin1(x.codePointAt(0)))) ? base : '?';
+  }).join('');
+}
+
 function generatePDF(p){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'pt', format:'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 40;
+  const textW = pageWidth - margin*2;
   let y = 50;
+
+  function ensureSpace(h){ if(y + h > pageHeight - 45){ doc.addPage(); y = 50; } }
+  function writeLines(lines, lineH, x){
+    lines.forEach(line=>{ ensureSpace(lineH); doc.text(line, x == null ? margin : x, y); y += lineH; });
+  }
 
   doc.setFont('helvetica','bold');
   doc.setFontSize(18);
@@ -1645,7 +2231,7 @@ function generatePDF(p){
   y += 20;
 
   doc.setFontSize(10);
-  const colW = (pageWidth - margin*2)/2;
+  const colW = textW/2;
   const fields = [
     ['First Name', p.firstName], ['Last Name', p.lastName],
     ['Email', p.email], ['Date of Birth', p.dob],
@@ -1655,8 +2241,7 @@ function generatePDF(p){
     ['Province', p.province], ['City', p.city || 'n/a'],
     ['How they knew us', p.know || 'n/a']
   ];
-  let colIdx = 0, rowY = y;
-  let startY = y;
+  const startY = y;
   fields.forEach((f,i)=>{
     const col = i % 2;
     const rowIndex = Math.floor(i/2);
@@ -1667,52 +2252,76 @@ function generatePDF(p){
     doc.setFont('helvetica','normal');
     const labelW = doc.getTextWidth(f[0]+': ');
     const maxW = colW - labelW - 10;
-    const val = String(f[1]||'n/a');
+    const val = pdfSafe(f[1]||'n/a');
     doc.text(val, x+labelW+4, yy, {maxWidth:maxW});
     y = yy;
   });
   y += 26;
-  doc.text('Address: ', margin, y);
+  doc.setFont('helvetica','bold');
+  doc.text('Address:', margin, y);
   doc.setFont('helvetica','normal');
-  let addrLines = doc.splitTextToSize(p.address||'n/a', pageWidth-margin*2-50);
-  doc.text(addrLines, margin+48, y);
-  y += addrLines.length*12 + 16;
+  const addrLines = doc.splitTextToSize(pdfSafe(p.address||'n/a'), textW-50);
+  writeLines(addrLines, 12, margin+48);
+  y += 16;
 
   function section(title, content){
-    if(y > 700){ doc.addPage(); y = 50; }
+    ensureSpace(40);
     doc.setFont('helvetica','bold');
     doc.setFontSize(11);
     doc.text(title, margin, y);
     y += 14;
     doc.setFont('helvetica','normal');
     doc.setFontSize(10);
-    const lines = doc.splitTextToSize(content||'n/a', pageWidth - margin*2);
-    doc.text(lines, margin, y);
-    y += lines.length*12 + 14;
+    writeLines(doc.splitTextToSize(pdfSafe(content||'n/a'), textW), 12);
+    y += 14;
   }
   section('Surgeries / Scars:', p.surgeries);
   section('Main problem / pain / how did it start:', p.mainProblem);
   section('Disease / medication:', p.medical);
 
-  if(y > 620){ doc.addPage(); y = 50; }
+  // Consent: the exact blocks the patient saw (English text), with ticked / unticked boxes
+  ensureSpace(60);
   doc.setFont('helvetica','bold');
   doc.setFontSize(11);
   doc.text('CONSENT:', margin, y);
+  y += 16;
+  const rt = recordTerms(p);
+  rt.blocks.forEach(b=>{
+    const txt = pdfSafe(blockText(b, 'UK'));
+    if(b.type === 'heading'){
+      y += 4;
+      doc.setFont('helvetica','bold'); doc.setFontSize(9.5);
+      writeLines(doc.splitTextToSize(txt, textW), 12);
+      y += 2;
+    } else if(b.type === 'checkbox'){
+      doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      const lines = doc.splitTextToSize(txt, textW - 18);
+      lines.forEach((line, k)=>{
+        ensureSpace(12);
+        if(k === 0){
+          doc.setDrawColor(40,40,40);
+          doc.setLineWidth(0.8);
+          doc.rect(margin, y-8, 9, 9);
+          if(rt.checks[b.id]){
+            doc.setLineWidth(1.5);
+            doc.line(margin+2, y-6, margin+7, y-1);
+            doc.line(margin+7, y-6, margin+2, y-1);
+          }
+          doc.setLineWidth(0.2);
+        }
+        doc.text(line, margin+18, y);
+        y += 12;
+      });
+      y += 2;
+    } else {
+      doc.setFont('helvetica','normal'); doc.setFontSize(8);
+      writeLines(doc.splitTextToSize(txt, textW), 10);
+      y += 6;
+    }
+  });
   y += 14;
-  doc.setFont('helvetica','normal');
-  doc.setFontSize(8);
-  const bE = p.consentEmail ? '[X]' : '[ ]';
-  const bW = p.consentWhatsApp ? '[X]' : '[ ]';
-  const bP = p.consentPostal ? '[X]' : '[ ]';
-  const legalWithChecks = LEGAL.UK.replace('Yes, Email', bE+' Yes, Email')
-                                   .replace('Yes, WhatsApp', bW+' Yes, WhatsApp')
-                                   .replace('Yes, postal mail', bP+' Yes, postal mail');
-  const legalLines = doc.splitTextToSize(legalWithChecks, pageWidth - margin*2);
-  if(y + legalLines.length*10 > 780){ doc.addPage(); y=50; }
-  doc.text(legalLines, margin, y);
-  y += legalLines.length*10 + 20;
 
-  if(y > 680){ doc.addPage(); y = 50; }
+  ensureSpace(80);
   doc.setFont('helvetica','bold');
   doc.setFontSize(10);
   doc.text('Signature:', margin, y+50);
@@ -1735,47 +2344,66 @@ function downloadPatientPDF(p){
 }
 function downloadPatientJSON(p){
   const blob = new Blob([JSON.stringify(toExportJSON(p),null,2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `Patient_${safeName(p.firstName)}_${safeName(p.lastName)}.json`;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  downloadBlob(blob, `Patient_${safeName(p.firstName)}_${safeName(p.lastName)}.json`);
 }
 
-/* ---------------------- I AGREE -> SAVE + AUTO-SAVE (Google Drive, then local Drive-synced folder, then share/download) + RESET ---------------------- */
+/* ---------------------- I AGREE -> SAVE (cloud, or local folders / share-download) + RESET ---------------------- */
 $('agreeBtn').addEventListener('click', async ()=>{
+  if(saving) return;
   const t = UI[currentLang];
-  const patient = collectPatientData();
-  savePatient(patient); // always keep a local on-device backup for the Admin panel
-
-  const jsonBlob = new Blob([JSON.stringify(toExportJSON(patient),null,2)], {type:'application/json'});
-  const pdfDoc = generatePDF(patient);
-  const pdfBlob = pdfDoc.output('blob');
-
-  const jsonFileName = `Patient_${safeName(patient.firstName)}_${safeName(patient.lastName)}.json`;
-  const pdfFileName = `Patient_${safeName(patient.firstName)}_${safeName(patient.lastName)}_${dateStamp(patient.savedAt)}.pdf`;
-
-  const driveSettings = getDriveSettings();
-  let jsonSaved = false, pdfSaved = false;
-
-  if(driveSettings.clientId && driveSettings.jsonFolderId){
-    jsonSaved = await uploadToDrive(driveSettings.jsonFolderId, jsonFileName, jsonBlob);
-  }
-  if(driveSettings.clientId && driveSettings.pdfFolderId){
-    pdfSaved = await uploadToDrive(driveSettings.pdfFolderId, pdfFileName, pdfBlob);
+  const missingChecks = missingRequired(pageBlocks('consent'), checkState);
+  if(missingChecks.length){
+    markMissing($('consentBlocks'), missingChecks);
+    alertModal(t.attention, tr('pleaseTickRequired'));
+    return;
   }
 
-  if(!jsonSaved) jsonSaved = await writeFileToFolder('anamnesis', jsonFileName, jsonBlob);
-  if(!pdfSaved) pdfSaved = await writeFileToFolder('consent', pdfFileName, pdfBlob);
+  saving = true;
+  $('agreeBtn').disabled = true; $('backBtn').disabled = true;
+  $('agreeBtn').textContent = tr('saving');
+  let message = t.successBody;
+  try{
+    const patient = collectPatientData();
+    if(cloudConfigured()){
+      patient.cloud = 'pending';
+      const storedLocally = savePatient(patient); // on-device copy + upload queue
+      try{
+        await uploadPatient(patient, 30000);
+        updatePatient(patient.id, { cloud:'done', uploadedAt:new Date().toISOString() });
+        message = tr('successCloud');
+      }catch(e){
+        console.warn('upload failed, queued for later', e);
+        message = tr('successQueued');
+        if(!storedLocally){
+          // device storage full AND no internet: hand the files over so nothing is lost
+          const f = patientFiles(patient);
+          await shareOrDownload(f.jsonBlob, f.jsonName);
+          await shareOrDownload(f.pdfBlob, f.pdfName);
+          message = t.successBody;
+        }
+      }
+    } else {
+      patient.cloud = 'n/a';
+      savePatient(patient);
+      const f = patientFiles(patient);
+      const jsonSaved = await writeFileToFolder('anamnesis', f.jsonName, f.jsonBlob);
+      const pdfSaved = await writeFileToFolder('consent', f.pdfName, f.pdfBlob);
+      if(!jsonSaved) await shareOrDownload(f.jsonBlob, f.jsonName);
+      if(!pdfSaved) await shareOrDownload(f.pdfBlob, f.pdfName);
+      if(jsonSaved && pdfSaved) message = tr('successFolder');
+    }
+  }finally{
+    saving = false;
+    $('agreeBtn').disabled = false; $('backBtn').disabled = false;
+    $('agreeBtn').textContent = UI[currentLang].agree;
+  }
 
-  if(!jsonSaved) await shareOrDownload(jsonBlob, jsonFileName);
-  if(!pdfSaved) await shareOrDownload(pdfBlob, pdfFileName);
-
-  alertModal(t.successTitle, t.successBody);
-  $('consentScreen').style.display='none';
-  $('formScreen').style.display='block';
+  okModal(t.successTitle, message);
+  showMain();
   resetForm();
+  refreshCloudPill();
+  flushPending();
+  syncConfig(false);
 });
 
 /* ---------------------- RESET / NEW ---------------------- */
@@ -1786,6 +2414,8 @@ function resetForm(){
   $('cbNationality').value=''; $('cbLanguage').value=''; $('cbSex').value='';
   $('cbProvince').value=''; $('cbKnow').selectedIndex = 0;
   residentValue=''; $('chipYes').classList.remove('active'); $('chipNo').classList.remove('active');
+  checkState = {};
+  signatureSnapshot = '';
   $('clearSigBtn').click();
   applyLanguage('UK');
 }
@@ -1793,22 +2423,34 @@ function resetForm(){
 $('newBtn').addEventListener('click', ()=>{
   const t = UI[currentLang];
   confirmModal(t.confirmNewTitle, t.confirmNewBody, ()=>{
-    $('consentScreen').style.display='none';
-    $('adminPanel').style.display='none';
-    $('formScreen').style.display='block';
+    adminUnlocked = false;
+    termsDraft = null; termsDirty = false;
+    showMain();
     resetForm();
   });
 });
 
-/* ---------------------- ADMIN PANEL (Ctrl+Q password gate) ---------------------- */
+/* ---------------------- ADMIN ACCESS (⚙ button, long-press on the logo, or Ctrl+Q) ---------------------- */
+function askAdminPassword(){
+  $('pwdInput').value='';
+  $('pwdOverlay').classList.add('show');
+  setTimeout(()=>$('pwdInput').focus(),50);
+}
 document.addEventListener('keydown', (e)=>{
   if(e.ctrlKey && (e.key==='q'||e.key==='Q')){
     e.preventDefault();
-    $('pwdInput').value='';
-    $('pwdOverlay').classList.add('show');
-    setTimeout(()=>$('pwdInput').focus(),50);
+    askAdminPassword();
   }
 });
+$('adminBtn').addEventListener('click', askAdminPassword);
+$('unlockBtn').addEventListener('click', askAdminPassword);
+(function(){
+  const logo = $('brandLogo');
+  let timer = null;
+  logo.addEventListener('pointerdown', ()=>{ clearTimeout(timer); timer = setTimeout(askAdminPassword, 1500); });
+  ['pointerup','pointerleave','pointercancel'].forEach(ev=> logo.addEventListener(ev, ()=> clearTimeout(timer)));
+  logo.addEventListener('contextmenu', e=> e.preventDefault());
+})();
 $('pwdCancel').addEventListener('click', ()=> $('pwdOverlay').classList.remove('show'));
 $('pwdOk').addEventListener('click', tryAdminPassword);
 $('pwdInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryAdminPassword(); });
@@ -1817,24 +2459,64 @@ function tryAdminPassword(){
   const t = UI[currentLang];
   const val = $('pwdInput').value;
   $('pwdOverlay').classList.remove('show');
-  if(val === 'importquesada'){
-    adminUnlocked = true;
-    $('adminBtn').style.display = 'inline-block';
-    alertModal(t.adminOkTitle, t.adminOkBody);
-  } else if(val !== ''){
+  if(val === '') return;
+  const cloud = getCloud();
+  // the cloud secret key also opens Admin, in case the password is forgotten
+  if(sha256(val) === (appConfig.adminHash || DEFAULT_ADMIN_HASH) || (cloud.secret && val === cloud.secret)){
+    openAdmin();
+  } else {
     alertModal(t.attention, t.adminWrong);
   }
 }
 
-$('adminBtn').addEventListener('click', ()=>{
+function openAdmin(){
+  adminUnlocked = true;
+  termsDraft = null;
+  setTermsDirty(false);
+  applyAdminLanguage();
+  showScreen('admin');
+  showTab(deviceReady() ? 'patients' : 'settings');
+}
+function closeAdmin(){
+  const leave = ()=>{
+    adminUnlocked = false;
+    termsDraft = null;
+    setTermsDirty(false);
+    $('pwdNewInput').value = ''; $('pwdConfirmInput').value = '';
+    showMain();
+  };
+  if(termsDirty) confirmModal(tr('attention'), tr('leaveUnsaved'), leave);
+  else leave();
+}
+$('backToFormBtn').addEventListener('click', closeAdmin);
+
+function showTab(name){
+  document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tab===name));
+  $('tabPatients').hidden = name!=='patients';
+  $('tabTerms').hidden = name!=='terms';
+  $('tabSettings').hidden = name!=='settings';
+  if(name==='patients') renderAdminPanel();
+  if(name==='terms'){
+    if(!termsDraft) termsDraft = deepCopy(appConfig.blocks);
+    renderTermsEditor();
+  }
+  if(name==='settings') renderSettings();
+}
+document.querySelectorAll('.tab-btn').forEach(b=> b.addEventListener('click', ()=> showTab(b.dataset.tab)));
+
+/* ---------------------- ADMIN: PATIENTS ---------------------- */
+function refreshPendingBox(){
+  const n = pendingCount();
+  $('pendingBox').hidden = n === 0 || !cloudConfigured();
+  $('pendingText').textContent = tr('pendingUploads') + n;
+}
+$('uploadNowBtn').addEventListener('click', async ()=>{
+  $('uploadNowBtn').disabled = true;
+  const r = await flushPending(true);
+  $('uploadNowBtn').disabled = false;
   renderAdminPanel();
-  $('formScreen').style.display='none';
-  $('consentScreen').style.display='none';
-  $('adminPanel').style.display='block';
-});
-$('backToFormBtn').addEventListener('click', ()=>{
-  $('adminPanel').style.display='none';
-  $('formScreen').style.display='block';
+  if(r.failed) alertModal(tr('attention'), tr('uploadFailed') + (r.error ? '\n\n' + cloudErrorText(r.error) : ''));
+  else okModal(tr('successTitle'), tr('uploadDone'));
 });
 
 function renderAdminPanel(){
@@ -1842,10 +2524,7 @@ function renderAdminPanel(){
   const list = getAllPatients().sort((a,b)=> b.savedAt.localeCompare(a.savedAt));
   const container = $('patientList');
   container.innerHTML = '';
-
-  const header = document.querySelector('#adminPanel h3');
-  header.textContent = t.savedPatients;
-  $('backToFormBtn').textContent = '← ' + t.backToForm;
+  refreshPendingBox();
 
   if(list.length===0){
     const div = document.createElement('div');
@@ -1861,7 +2540,9 @@ function renderAdminPanel(){
     const info = document.createElement('div');
     info.className='pinfo';
     const dateShown = new Date(p.savedAt).toLocaleString();
-    info.innerHTML = `<b>${escapeHtml(p.firstName)} ${escapeHtml(p.lastName)}</b><br>${escapeHtml(p.email||'')} · ${escapeHtml(dateShown)}`;
+    const badge = p.cloud==='done' ? `<span class="badge done">☁ ${escapeHtml(tr('badgeDone'))}</span>`
+      : p.cloud==='pending' ? `<span class="badge pending">⏳ ${escapeHtml(tr('badgePending'))}</span>` : '';
+    info.innerHTML = `<b>${escapeHtml(p.firstName)} ${escapeHtml(p.lastName)}</b>${badge}<br>${escapeHtml(p.email||'')} · ${escapeHtml(dateShown)}`;
     const actions = document.createElement('div');
     actions.className='pactions';
 
@@ -1876,7 +2557,7 @@ function renderAdminPanel(){
     const delBtn = document.createElement('button');
     delBtn.className='mini-btn mini-danger'; delBtn.textContent=t.deleteRec;
     delBtn.onclick = ()=> confirmModal(t.deleteConfirmTitle, t.deleteConfirmBody, ()=>{
-      deletePatient(p.id); renderAdminPanel();
+      deletePatient(p.id); renderAdminPanel(); refreshCloudPill();
     });
 
     actions.appendChild(pdfBtn); actions.appendChild(jsonBtn); actions.appendChild(delBtn);
@@ -1889,8 +2570,10 @@ function renderAdminPanel(){
   clearAllBtn.style.marginTop='14px';
   clearAllBtn.textContent = t.clearAllBtn;
   clearAllBtn.onclick = ()=> confirmModal(t.clearAllTitle, t.clearAllBody, ()=>{
-    localStorage.setItem(STORAGE_KEY, '[]');
+    // records still waiting for the cloud are kept, otherwise they would be lost
+    persistPatients(getAllPatients().filter(p=>p.cloud==='pending'));
     renderAdminPanel();
+    refreshCloudPill();
   });
   container.appendChild(clearAllBtn);
 }
@@ -1899,18 +2582,359 @@ function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-/* ---------------------- INIT ---------------------- */
-(function seedDriveDefaults(){
-  const existing = getDriveSettings();
-  if(!existing.clientId && !existing.jsonFolderId){
-    setDriveSettings({
-      clientId: '827075225749-0qe7jvj91vneh54ob7ig1g09o8bke01s.apps.googleusercontent.com',
-      jsonFolderId: '1qCSVZ0HbaIijC3P1KA1hmEOzg9O9F1rj',
-      pdfFolderId: '1LaJCEvPiyOUCniZKvEqvFw_rVTyw4KVE'
+/* ---------------------- ADMIN: TERMS & CHECKBOXES EDITOR ---------------------- */
+let termsDraft = null;   // working copy of the blocks while editing
+let termsDirty = false;
+const RESERVED_KEYS = ['FirstName','LastName','Email','Phone','Address','NIE','DOB','Nationality','Province','Know',
+  'Language','Resident','Surgeries','MainProblem','MedicalConditions','Sex','City','Prefix'];
+
+function setTermsDirty(v){
+  termsDirty = v;
+  $('termsDirtyFlag').textContent = v ? tr('unsavedChanges') : '';
+}
+function autoGrow(ta){
+  ta.style.height = 'auto';
+  ta.style.height = (ta.scrollHeight + 2) + 'px';
+}
+
+function renderTermsEditor(focusId){
+  const root = $('termsEditor');
+  root.innerHTML = '';
+  [['form','pageForm'], ['consent','pageConsent']].forEach(([page, titleKey])=>{
+    const sec = el('div', 'te-section');
+    sec.appendChild(el('div', 'te-section-title', tr(titleKey)));
+    const blocks = termsDraft.filter(b=>b.page===page);
+    if(!blocks.length) sec.appendChild(el('div', 'te-empty', tr('emptyPage')));
+    sec.appendChild(addButtons(page, null));
+    blocks.forEach((b, i)=>{
+      sec.appendChild(blockEditor(b, i, blocks.length));
+      sec.appendChild(addButtons(page, b.id));
     });
+    root.appendChild(sec);
+  });
+  root.querySelectorAll('textarea').forEach(autoGrow);
+  setTermsDirty(termsDirty);
+  if(focusId){
+    const card = root.querySelector('.te-card[data-bid="'+focusId+'"]');
+    if(card) card.scrollIntoView({block:'nearest'});
   }
-})();
+}
+
+function addButtons(page, afterId){
+  const row = el('div', 'te-add');
+  [['text','addText'], ['checkbox','addCheckbox'], ['heading','addHeading']].forEach(([type, key])=>{
+    const btn = el('button', '', tr(key));
+    btn.type = 'button';
+    btn.addEventListener('click', ()=> insertBlock(page, afterId, type));
+    row.appendChild(btn);
+  });
+  return row;
+}
+
+function insertBlock(page, afterId, type){
+  const b = {id:newId(), page, type, text:{UK:'', ES:'', FR:''}, key:'', group:'', required:false};
+  let idx;
+  if(afterId) idx = termsDraft.findIndex(x=>x.id===afterId) + 1;
+  else {
+    idx = termsDraft.findIndex(x=>x.page===page);
+    if(idx < 0) idx = page==='form' ? 0 : termsDraft.length;
+  }
+  termsDraft.splice(idx, 0, b);
+  setTermsDirty(true);
+  renderTermsEditor(b.id);
+  const ta = $('termsEditor').querySelector('.te-card[data-bid="'+b.id+'"] textarea');
+  if(ta) ta.focus();
+}
+
+function moveBlock(b, dir){
+  const idx = termsDraft.indexOf(b);
+  let j = idx + dir;
+  while(j >= 0 && j < termsDraft.length && termsDraft[j].page !== b.page) j += dir;
+  if(j < 0 || j >= termsDraft.length) return;
+  termsDraft[idx] = termsDraft[j];
+  termsDraft[j] = b;
+  setTermsDirty(true);
+  renderTermsEditor(b.id);
+}
+
+function moveBlockToOtherPage(b){
+  termsDraft = termsDraft.filter(x=>x!==b);
+  b.page = b.page==='form' ? 'consent' : 'form';
+  let idx;
+  if(b.page === 'consent'){
+    // lands at the top of page 2
+    idx = termsDraft.findIndex(x=>x.page==='consent');
+    if(idx < 0) idx = termsDraft.length;
+  } else {
+    // lands at the bottom of page 1
+    idx = 0;
+    termsDraft.forEach((x, k)=>{ if(x.page==='form') idx = k + 1; });
+  }
+  termsDraft.splice(idx, 0, b);
+  setTermsDirty(true);
+  renderTermsEditor(b.id);
+}
+
+function blockEditor(b, i, count){
+  const card = el('div', 'te-card t-' + b.type);
+  card.dataset.bid = b.id;
+
+  const head = el('div', 'te-head');
+  head.appendChild(el('span', 'te-num', '#' + (i+1)));
+  const typeSel = document.createElement('select');
+  [['text','typeText'], ['heading','typeHeading'], ['checkbox','typeCheckbox']].forEach(([v, k])=>{
+    const o = document.createElement('option'); o.value = v; o.textContent = tr(k); typeSel.appendChild(o);
+  });
+  typeSel.value = b.type;
+  typeSel.addEventListener('change', ()=>{ b.type = typeSel.value; setTermsDirty(true); renderTermsEditor(b.id); });
+  head.appendChild(typeSel);
+
+  const tools = el('div', 'te-tools');
+  const tool = (label, title, fn, disabled, cls)=>{
+    const x = el('button', cls || '', label);
+    x.type = 'button'; x.title = title; x.setAttribute('aria-label', title);
+    x.disabled = !!disabled;
+    x.addEventListener('click', fn);
+    tools.appendChild(x);
+  };
+  tool('↑', tr('moveUp'), ()=> moveBlock(b, -1), i === 0);
+  tool('↓', tr('moveDown'), ()=> moveBlock(b, +1), i === count-1);
+  tool('⇄', tr('movePage'), ()=> moveBlockToOtherPage(b));
+  tool('🗑', tr('deleteBlock'), ()=> confirmModal(tr('deleteBlock'), tr('deleteBlockConfirm'), ()=>{
+    termsDraft = termsDraft.filter(x=>x!==b);
+    setTermsDirty(true);
+    renderTermsEditor();
+  }), false, 'del');
+  head.appendChild(tools);
+  card.appendChild(head);
+
+  LANGS.forEach(l=>{
+    const row = el('div', 'te-lang');
+    row.appendChild(el('span', 'flag', FLAGS[l]));
+    const ta = document.createElement('textarea');
+    ta.rows = b.type === 'text' ? 3 : 1;
+    ta.value = b.text[l] || '';
+    ta.addEventListener('input', ()=>{ b.text[l] = ta.value; setTermsDirty(true); autoGrow(ta); });
+    row.appendChild(ta);
+    card.appendChild(row);
+  });
+
+  if(b.type === 'checkbox'){
+    const opts = el('div', 'te-opts');
+
+    const reqLabel = el('label');
+    const req = document.createElement('input');
+    req.type = 'checkbox'; req.checked = !!b.required;
+    req.addEventListener('change', ()=>{ b.required = req.checked; setTermsDirty(true); });
+    reqLabel.appendChild(req);
+    reqLabel.appendChild(document.createTextNode(tr('requiredLabel')));
+    opts.appendChild(reqLabel);
+
+    const grpLabel = el('label');
+    grpLabel.appendChild(document.createTextNode(tr('groupLabel')));
+    const grp = document.createElement('select');
+    [['', tr('groupNone')], ['A','A'], ['B','B'], ['C','C'], ['D','D']].forEach(([v, txt])=>{
+      const o = document.createElement('option'); o.value = v; o.textContent = txt; grp.appendChild(o);
+    });
+    grp.value = b.group || '';
+    grp.addEventListener('change', ()=>{ b.group = grp.value; setTermsDirty(true); });
+    grpLabel.appendChild(grp);
+    opts.appendChild(grpLabel);
+
+    const keyLabel = el('label');
+    keyLabel.appendChild(document.createTextNode(tr('jsonKeyLabel')));
+    const key = document.createElement('input');
+    key.type = 'text'; key.value = b.key || ''; key.placeholder = tr('jsonKeyAuto');
+    key.autocomplete = 'off'; key.spellcheck = false; key.setAttribute('autocapitalize', 'off');
+    key.addEventListener('input', ()=>{ b.key = key.value.trim(); setTermsDirty(true); });
+    keyLabel.appendChild(key);
+    opts.appendChild(keyLabel);
+
+    card.appendChild(opts);
+  }
+  return card;
+}
+
+function autoKeyFor(b, used){
+  const src = (b.text.UK || b.text.ES || b.text.FR || '').normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const words = src.replace(/[^A-Za-z0-9 ]+/g, ' ').trim().split(/\s+/).filter(Boolean).slice(0, 5);
+  const base = ('Consent' + words.map(w=> w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join('')).slice(0, 40);
+  let k = base, n = 2;
+  while(used.has(k) || RESERVED_KEYS.includes(k)) k = base + (n++);
+  return k;
+}
+
+// Checks the draft; fills in automatic JSON names. Returns a list of problems (empty = OK).
+function finalizeDraft(blocks){
+  const errors = [], used = new Set();
+  const where = b=>{
+    const pos = blocks.filter(x=>x.page===b.page).indexOf(b) + 1;
+    return tr(b.page==='form' ? 'pageForm' : 'pageConsent').split(' — ')[0] + ', ' + tr('blockWord') + ' #' + pos;
+  };
+  blocks.forEach(b=>{
+    if(!LANGS.some(l=>(b.text[l] || '').trim())) errors.push(where(b) + ': ' + tr('errEmptyText'));
+  });
+  blocks.filter(b=>b.type==='checkbox' && b.key).forEach(b=>{
+    if(!/^[A-Za-z][A-Za-z0-9_]{0,59}$/.test(b.key)) errors.push(where(b) + ': ' + tr('errKeyInvalid'));
+    else if(RESERVED_KEYS.includes(b.key)) errors.push(where(b) + ': ' + tr('errKeyReserved'));
+    else if(used.has(b.key)) errors.push(where(b) + ': ' + tr('errKeyDup'));
+    used.add(b.key);
+  });
+  if(errors.length) return errors;
+  blocks.filter(b=>b.type==='checkbox' && !b.key).forEach(b=>{ b.key = autoKeyFor(b, used); used.add(b.key); });
+  return [];
+}
+
+async function saveTerms(){
+  const errors = finalizeDraft(termsDraft);
+  if(errors.length){
+    alertModal(tr('attention'), tr('termsInvalid') + '\n\n' + errors.join('\n'));
+    return;
+  }
+  $('termsSaveBtn').disabled = true; $('termsSaveBtn2').disabled = true;
+  try{
+    appConfig.blocks = normalizeBlocks(deepCopy(termsDraft));
+    termsDraft = deepCopy(appConfig.blocks);
+    setTermsDirty(false);
+    renderTermsEditor();
+    const where = await commitConfig();
+    okModal(tr('successTitle'), where==='cloud' ? tr('termsSavedCloud') : where==='pending' ? tr('termsSavedPending') : tr('termsSavedLocal'));
+  }finally{
+    $('termsSaveBtn').disabled = false; $('termsSaveBtn2').disabled = false;
+  }
+}
+$('termsSaveBtn').addEventListener('click', saveTerms);
+$('termsSaveBtn2').addEventListener('click', saveTerms);
+
+$('termsDiscardBtn').addEventListener('click', ()=>{
+  if(!termsDirty) return;
+  confirmModal(tr('attention'), tr('discardConfirm'), ()=>{
+    termsDraft = deepCopy(appConfig.blocks);
+    setTermsDirty(false);
+    renderTermsEditor();
+  });
+});
+
+$('termsRestoreBtn').addEventListener('click', ()=>{
+  confirmModal(tr('attention'), tr('restoreConfirm'), ()=>{
+    termsDraft = buildDefaultBlocks();
+    setTermsDirty(true);
+    renderTermsEditor();
+  });
+});
+
+$('termsPreviewBtn').addEventListener('click', ()=>{
+  const root = $('previewBlocks');
+  root.innerHTML = '';
+  const opts = {state:{}, all:termsDraft, roots:[root]};
+  [['form','pageForm'], ['consent','pageConsent']].forEach(([page, key])=>{
+    const blocks = termsDraft.filter(b=>b.page===page);
+    if(!blocks.length) return;
+    root.appendChild(el('div', 'preview-page', tr(key)));
+    const box = el('div', 'c-blocks');
+    root.appendChild(box);
+    renderBlocks(box, blocks, currentLang, opts);
+  });
+  $('previewOverlay').classList.add('show');
+});
+$('previewCloseBtn').addEventListener('click', ()=> $('previewOverlay').classList.remove('show'));
+
+$('termsExportBtn').addEventListener('click', ()=>{
+  const data = {app:'nordicfysio-anamnesis', type:'terms', exportedAt:new Date().toISOString(), blocks:termsDraft};
+  downloadBlob(new Blob([JSON.stringify(data, null, 2)], {type:'application/json'}), 'NordicFysio_terms_' + dateStamp() + '.json');
+});
+$('termsImportBtn').addEventListener('click', ()=> $('termsImportInput').click());
+$('termsImportInput').addEventListener('change', async function(){
+  const file = this.files && this.files[0];
+  this.value = '';
+  if(!file) return;
+  try{
+    const data = JSON.parse(await file.text());
+    const blocks = normalizeBlocks(Array.isArray(data) ? data : data && data.blocks);
+    if(!blocks.length) throw new Error('empty');
+    termsDraft = blocks;
+    setTermsDirty(true);
+    renderTermsEditor();
+    okModal(tr('successTitle'), tr('importOk'));
+  }catch(e){
+    alertModal(tr('attention'), tr('importBad'));
+  }
+});
+
+/* ---------------------- ADMIN: CONNECTION & SETTINGS ---------------------- */
+function renderSettings(){
+  const c = getCloud();
+  $('cloudUrlInput').value = c.url || '';
+  $('cloudSecretInput').value = c.secret || '';
+  $('localModeChk').checked = localStorage.getItem(LOCAL_MODE_KEY)==='1';
+  refreshCloudStatus();
+  refreshFolderStatusUI();
+}
+function refreshCloudStatus(){
+  const c = getCloud();
+  const connected = !!(c.url && c.secret);
+  let s = connected ? '✅ ' + tr('cloudConnected') : '⚪ ' + tr('cloudNotConnected');
+  if(connected && c.account) s += '\n' + tr('cloudAccount') + ': ' + c.account;
+  if(connected && c.jsonFolder) s += '\n' + tr('cloudFolders') + ': ' + c.jsonFolder + ' · ' + c.pdfFolder;
+  $('cloudStatus').textContent = s;
+  $('cloudDisconnectBtn').hidden = !connected;
+}
+
+$('cloudSaveTestBtn').addEventListener('click', async ()=>{
+  const url = $('cloudUrlInput').value.trim();
+  const secret = $('cloudSecretInput').value.trim();
+  if(!CLOUD_URL_RE.test(url)){ alertModal(tr('attention'), tr('cloudBadUrl')); return; }
+  if(!secret){ alertModal(tr('attention'), tr('cloudNeedSecret')); return; }
+  const btn = $('cloudSaveTestBtn');
+  btn.disabled = true;
+  $('cloudStatus').textContent = '⏳ ' + tr('cloudTesting');
+  try{
+    const r = await cloudCall('ping', {}, 30000, {url, secret});
+    setCloud({url, secret, account:r.account || '', jsonFolder:r.jsonFolder || '', pdfFolder:r.pdfFolder || ''});
+    refreshCloudStatus();
+    okModal(tr('cloudConnected'), tr('cloudOkBody') + '\n\n' + $('cloudStatus').textContent.replace(/^✅ [^\n]*\n?/, ''));
+    syncConfig(true);
+    flushPending(true);
+  }catch(e){
+    refreshCloudStatus();
+    $('cloudStatus').textContent = '❌ ' + cloudErrorText(e);
+  }finally{
+    btn.disabled = false;
+  }
+});
+
+$('cloudDisconnectBtn').addEventListener('click', ()=>{
+  confirmModal(tr('attention'), tr('cloudDisconnectConfirm'), ()=>{
+    setCloud({});
+    renderSettings();
+    refreshCloudPill();
+  });
+});
+
+$('localModeChk').addEventListener('change', function(){
+  if(this.checked) localStorage.setItem(LOCAL_MODE_KEY, '1');
+  else localStorage.removeItem(LOCAL_MODE_KEY);
+});
+
+$('pwdChangeBtn').addEventListener('click', async ()=>{
+  const a = $('pwdNewInput').value, b = $('pwdConfirmInput').value;
+  if(a.length < 6){ alertModal(tr('attention'), tr('pwdTooShort')); return; }
+  if(a !== b){ alertModal(tr('attention'), tr('pwdMismatch')); return; }
+  appConfig.adminHash = sha256(a);
+  $('pwdNewInput').value = ''; $('pwdConfirmInput').value = '';
+  await commitConfig();
+  okModal(tr('successTitle'), tr('pwdChanged'));
+});
+
+/* ---------------------- INIT ---------------------- */
 applyLanguage('UK');
+showMain();
+window.addEventListener('online', ()=>{ flushPending(); syncConfig(true); });
+setInterval(()=>{ flushPending(); syncConfig(false); }, 2*60*1000);
+setTimeout(()=>{ flushPending(); syncConfig(true); }, 1500);
+if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+  navigator.serviceWorker.register('sw.js').catch(e=> console.warn('Service worker not registered', e));
+}
 
 })();
 
