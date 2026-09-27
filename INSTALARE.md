@@ -7,6 +7,14 @@ Ce e în acest repo:
 
 Cheia secretă **nu** e în fișiere: o generează Google la pasul 1.5, deci repo-ul poate rămâne public.
 
+**Nu există .exe.** Un .exe merge doar pe Windows. Aplicația e o pagină web: o urci o singură dată pe Netlify (hosting gratuit, adresă https), iar pe tabletă o instalezi din Chrome. Apare ca iconiță pe ecran și se deschide ca o aplicație normală.
+
+Drumul datelor: tableta → scriptul Google de pe contul clinicii (`Code.gs`) → Google Drive:
+- `Patient_Prenume_Nume.json` în folderul **Anamnesis (JSON)** (`1qCSVZ0HbaIijC3P1KA1hmEOzg9O9F1rj`);
+- `Patient_Prenume_Nume_AAAALLZZ_OOMM.pdf` în folderul **Patients consent (PDF)** (`1LaJCEvPiyOUCniZKvEqvFw_rVTyw4KVE`).
+
+Pentru alte foldere: deschide folderul în Drive, copiază partea de după `/folders/` din bara de adrese și pune-o în primele rânduri din `Code.gs` (`JSON_FOLDER_ID`, `PDF_FOLDER_ID`).
+
 ---
 
 ## Partea 0: descarcă fișierele pe PC
@@ -96,6 +104,25 @@ Admin → **Terms & checkboxes**:
 - Mai comod: editează de pe PC (adresa Netlify în Chrome, conectat cu aceeași adresă `/exec` și cheie).
 - Fiecare PDF păstrează exact textul și bifele pe care le-a văzut pacientul când a semnat, chiar dacă textul se schimbă ulterior.
 - Termenii sunt ținuți în fișierul `NordicFysio_Anamnesis_Settings.json` din My Drive-ul clinicii. Nu-l șterge.
+
+### Ce apare în PDF și de unde se schimbă
+
+| În PDF | De unde vine |
+|---|---|
+| Sus: nume, email, telefon, adresă, probleme medicale | câmpurile din formular (fixe) |
+| Secțiunea **CONSENT:** | blocurile din „Terms & checkboxes”, în ordine: întâi cele de pe Page 1, apoi cele de pe Page 2 |
+| ☒ / ☐ în dreptul fiecărei bife | ce a bifat pacientul |
+| Jos: semnătura și data | semnătura desenată pe tabletă |
+
+În PDF se folosește textul din căsuța 🇬🇧. Dacă aceasta e goală, se ia textul spaniol.
+
+Ca să înlocuiești textul de consimțământ:
+
+1. Admin → **Terms & checkboxes** → secțiunea **Page 2**.
+2. Blocul #1 (textul lung de la început) și ultimul bloc (comunicări comerciale) sunt textul actual. Șterge textul din căsuțe și lipește-l pe cel nou în 🇬🇧, 🇪🇸 și 🇫🇷, sau șterge blocul cu 🗑 și adaugă altul cu **+ Text**.
+3. Bifele (Email / WhatsApp / Poștă) se editează la fel. Una nouă se adaugă cu **+ Checkbox**, exact în locul unde apeși.
+4. **Preview** → verifici → **Save**.
+5. Faci un pacient de test și verifici PDF-ul din Drive.
 
 ## Fără internet
 
