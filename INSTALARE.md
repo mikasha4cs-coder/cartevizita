@@ -1,6 +1,6 @@
-# NordicFysio Anamnesis — instalare pe tabletă (fără Gmail pe tabletă)
+# NordicFysio Anamnesis v1.1 — instalare pe tabletă (fără Gmail pe tabletă)
 
-Ce conține pachetul `NordicFysio-Anamnesis.zip`:
+Ce conține pachetul `NordicFysio-Anamnesis-v1.1.zip`:
 
 - `netlify/` — aplicația (fostul `AnamnesisFinal.html`, acum `netlify/index.html`) + fișierele pentru instalare pe tabletă. **Acesta e folderul care se trage pe Netlify.**
 - `apps-script/Code.gs` — scriptul care salvează PDF-ul și JSON-ul în Google Drive-ul clinicii.
@@ -25,8 +25,8 @@ Pentru alte foldere: deschide folderul în Drive, copiază partea de după `/fol
 
 ## Partea 0: pregătește fișierele pe PC
 
-1. Salvează `NordicFysio-Anamnesis.zip` pe PC (de exemplu pe Desktop).
-2. Click dreapta pe ZIP → **Extract All**. Apare folderul `NordicFysio-Anamnesis`, cu `netlify`, `apps-script` și tutorialul.
+1. Salvează `NordicFysio-Anamnesis-v1.1.zip` pe PC (de exemplu pe Desktop).
+2. Click dreapta pe ZIP → **Extract All**. Apare folderul `NordicFysio-Anamnesis-v1.1`, cu `netlify`, `apps-script` și tutorialul.
 3. Nu mai folosi fișierele vechi din `C:\Users\mikas\Desktop\Utile\EsiReg` — nu amesteca versiunile.
 
 ## Partea 1: Apps Script (pe PC, ~10 minute)
@@ -83,7 +83,7 @@ Pentru termeni și bife **nu** mai e nevoie de Netlify. Deploy nou doar dacă se
 3. Deschide aplicația de pe ecranul principal → **Unlock (admin)** → parola `importquesada` → se deschide „Connection & settings”.
 4. Lipește adresa `/exec` și cheia → **Save & test connection**. Trebuie să apară „Connected”, Gmail-ul clinicii și numele celor două foldere.
 5. Tot acolo, la **Admin password**, pune imediat o parolă nouă (cea veche e vizibilă pe GitHub, pentru că repo-ul e public). Parola nouă ajunge automat pe toate dispozitivele conectate. Dacă o uiți, poți scrie cheia secretă în locul parolei.
-6. **← Back to form** → completează un pacient de test → I AGREE → mesajul „…sent to the clinic's cloud” → verifică în Drive că au apărut PDF-ul și JSON-ul, apoi șterge-le.
+6. Tot în Admin apasă **🧪 Fill in a test patient**: formularul se completează singur cu pacientul „TEST Prueba”. Apasă Next → I AGREE → mesajul „…sent to the clinic's cloud” → verifică în Drive că au apărut PDF-ul și JSON-ul, apoi șterge-le.
 7. Fixare aplicație: Setări Android → Securitate (sau „Securitate și confidențialitate → Alte setări”) → **Fixare aplicație / Pin windows** → Activat + „Solicită PIN la anulare”. Deschide aplicația → butonul Recente (sau glisează în sus și ține) → atinge iconița aplicației de deasupra ferestrei → **Fixează**. Ieșire: ții apăsat Înapoi + Recente (sau glisezi în sus și ții) → PIN.
 8. Opțional: Setări → Afișaj → Timp expirare ecran mai lung; tableta ținută la încărcat.
 
@@ -92,6 +92,26 @@ Pentru termeni și bife **nu** mai e nevoie de Netlify. Deploy nou doar dacă se
 Dacă mai iei o tabletă, repeți doar Partea 3, cu aceeași adresă `/exec` și aceeași cheie.
 
 ---
+
+## Versiuni
+
+Versiunea care rulează se vede:
+
+- pe tabletă, sus lângă „Anamnesis” (de ex. **v1.1**);
+- în Admin, dreapta sus: `App v1.1 (2026-09-27) · Google script v1.1`. Dacă scriptul Google e prea vechi apare ⚠, iar în „Connection & settings” scrie ce trebuie făcut;
+- în Apps Script, la `testSetup`, primul rând din Execution log: `Script version: 1.1`.
+
+| Versiune | Data | Ce e nou | Trebuie actualizat |
+|---|---|---|---|
+| **v1.1** | 27.09.2026 | Căutare prin tastare la Nationality, Language și Province (găsește și după numele în spaniolă/franceză). Alegerea rămâne când pacientul schimbă limba. Buton 🧪 în Admin pentru pacient de test. Versiunea afișată în aplicație și în script. | Netlify **și** Code.gs |
+| v1.0 | 27.09.2026 | Prima versiune: termeni și bife editabile, salvare în Drive prin Apps Script, coadă fără internet, instalare pe tabletă. | — |
+
+### Cum actualizezi la o versiune nouă
+
+1. **Netlify:** proiectul → **Deploys** → tragi folderul `netlify` din pachetul nou.
+2. **Code.gs** (doar dacă tabelul de mai sus spune „Code.gs”): deschizi proiectul pe script.google.com → Ctrl+A → lipești noul `Code.gs` → Ctrl+S → **Deploy → Manage deployments → ✏️ → Version: New version → Deploy**.
+    - **Nu** folosi „New deployment”: acela face o adresă `/exec` nouă și trebuie reconectate toate tabletele. Cu „Manage deployments” adresa și cheia rămân aceleași.
+3. **Tableta:** închizi aplicația și o deschizi din nou; verifici versiunea de sus. Dacă a rămas cea veche: Chrome → ⋮ → Setări → Setări site → Toate site-urile → adresa Netlify → **Șterge datele**, apoi o conectezi din nou (Partea 3, pașii 3–4).
 
 ## Intrarea în Admin
 

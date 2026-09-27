@@ -18,6 +18,9 @@
  * (never in this file), so this file can be shared or published safely.
  */
 
+// Version of this script; the app shows it in Admin and warns when it is too old.
+const SCRIPT_VERSION = '1.1';
+
 const JSON_FOLDER_ID = '1qCSVZ0HbaIijC3P1KA1hmEOzg9O9F1rj'; // Anamnesis (JSON)
 const PDF_FOLDER_ID = '1LaJCEvPiyOUCniZKvEqvFw_rVTyw4KVE';  // Patients consent (PDF)
 const CONFIG_FILE_NAME = 'NordicFysio_Anamnesis_Settings.json'; // consent text + checkboxes (in My Drive)
@@ -25,6 +28,7 @@ const CONFIG_FILE_NAME = 'NordicFysio_Anamnesis_Settings.json'; // consent text 
 /** Run once from the editor: authorizes Drive access and prints the secret key. */
 function testSetup() {
   const secret = getOrCreateSecret_();
+  console.log('Script version: ' + SCRIPT_VERSION);
   console.log('Account: ' + Session.getEffectiveUser().getEmail());
   console.log('JSON folder: ' + DriveApp.getFolderById(JSON_FOLDER_ID).getName());
   console.log('PDF folder: ' + DriveApp.getFolderById(PDF_FOLDER_ID).getName());
@@ -48,7 +52,7 @@ function getOrCreateSecret_() {
 }
 
 function doGet() {
-  return ContentService.createTextOutput('NordicFysio Anamnesis: the connection works. Open the app, not this address.');
+  return ContentService.createTextOutput('NordicFysio Anamnesis v' + SCRIPT_VERSION + ': the connection works. Open the app, not this address.');
 }
 
 function doPost(e) {
@@ -77,6 +81,7 @@ function doPost(e) {
 }
 
 function reply_(obj) {
+  obj.version = SCRIPT_VERSION;
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
 
