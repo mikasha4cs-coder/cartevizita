@@ -1,6 +1,6 @@
 # NordicFysio Anamnesis — instalar la aplicación en una tableta nueva
 
-Versión de la aplicación: **v1.1** (27.09.2026) · Tiempo necesario: unos 10 minutos
+Versión de la aplicación: **v1.2** (28.09.2026) · Tiempo necesario: unos 10 minutos
 
 Esta guía sirve para añadir **otra tableta** cuando la clínica ya tiene la aplicación funcionando (el script de Google y Netlify ya están configurados). La tableta **no necesita cuenta de Google (Gmail)**.
 
@@ -22,7 +22,7 @@ Necesitas:
 ## Paso 1 — Abrir la aplicación en Chrome
 
 1. Abre **Chrome** y escribe la dirección de la aplicación (`….netlify.app`).
-2. ✅ Debe aparecer un candado 🔒 con el texto *«This device is not connected»* y, arriba a la izquierda, junto a «Anamnesis», la etiqueta **v1.1**.
+2. ✅ Debe aparecer un candado 🔒 con el texto *«This device is not connected»* y, arriba a la izquierda, junto a «Anamnesis», la etiqueta **v1.2**.
 3. Toca la bandera **🇪🇸** (arriba a la derecha) para ver la aplicación en español. El candado dirá *«Este dispositivo no está conectado»*.
 
 ## Paso 2 — Instalarla como aplicación
@@ -44,7 +44,7 @@ Necesitas:
     - **Conectado**
     - **Cuenta:** el Gmail de la clínica
     - **Carpetas:** Anamnesis · Patients consent
-    - **Aplicación v1.1 (2026-09-27) · Script de Google v1.1**, sin el símbolo ⚠
+    - **Aplicación v1.2 (2026-09-28) · Script de Google v1.1**, sin el símbolo ⚠
 8. **No cambies la contraseña de administrador.** La tableta copia sola la contraseña de la clínica y también los términos y casillas.
 
 ## Paso 4 — Comprobar los términos y casillas
@@ -80,7 +80,7 @@ Necesitas:
 - **Entrar:** botón **⚙** arriba, o mantener pulsado el logo «NordicFysio» 2 segundos → contraseña de la clínica.
 - **Salir:** **← Volver al formulario**. La administración se bloquea sola.
 - **Contraseña olvidada:** en una tableta ya conectada se puede escribir la **clave secreta** en lugar de la contraseña.
-- **Versión:** siempre visible arriba (v1.1) y en la administración, arriba a la derecha.
+- **Versión:** siempre visible arriba (v1.2) y en la administración, arriba a la derecha.
 
 ## Si algo no funciona
 
@@ -91,4 +91,4 @@ Necesitas:
 | «…no puede abrir las carpetas de Drive» | Avisa al responsable: el script no está en la cuenta de la clínica. |
 | ⚠ «El script de Google es más antiguo que esta aplicación…» | Avisa al responsable: hay que actualizar el script (Code.gs). |
 | «¡Contraseña incorrecta!» antes de conectar | En una tableta nueva usa la contraseña inicial `importquesada`. |
-| Arriba no pone **v1.1** | Chrome → ⋮ → **Configuración → Configuración de sitios → Todos los sitios** → la dirección `….netlify.app` → **Borrar y restablecer**, desinstala el icono y vuelve al Paso 1. |
+| Arriba no pone **v1.2** | Chrome → ⋮ → **Configuración → Configuración de sitios → Todos los sitios** → la dirección `….netlify.app` → **Borrar y restablecer**, desinstala el icono y vuelve al Paso 1. |

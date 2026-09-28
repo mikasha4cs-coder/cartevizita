@@ -1,6 +1,6 @@
-# NordicFysio Anamnesis v1.1 — instalare pe tabletă (fără Gmail pe tabletă)
+# NordicFysio Anamnesis v1.2 — instalare pe tabletă (fără Gmail pe tabletă)
 
-Ce conține pachetul `NordicFysio-Anamnesis-v1.1.zip`:
+Ce conține pachetul `NordicFysio-Anamnesis-v1.2.zip`:
 
 - `netlify/` — aplicația (fostul `AnamnesisFinal.html`, acum `netlify/index.html`) + fișierele pentru instalare pe tabletă. **Acesta e folderul care se trage pe Netlify.**
 - `apps-script/Code.gs` — scriptul care salvează PDF-ul și JSON-ul în Google Drive-ul clinicii.
@@ -25,8 +25,8 @@ Pentru alte foldere: deschide folderul în Drive, copiază partea de după `/fol
 
 ## Partea 0: pregătește fișierele pe PC
 
-1. Salvează `NordicFysio-Anamnesis-v1.1.zip` pe PC (de exemplu pe Desktop).
-2. Click dreapta pe ZIP → **Extract All**. Apare folderul `NordicFysio-Anamnesis-v1.1`, cu `netlify`, `apps-script` și tutorialul.
+1. Salvează `NordicFysio-Anamnesis-v1.2.zip` pe PC (de exemplu pe Desktop).
+2. Click dreapta pe ZIP → **Extract All**. Apare folderul `NordicFysio-Anamnesis-v1.2`, cu `netlify`, `apps-script` și tutorialul.
 3. Nu mai folosi fișierele vechi din `C:\Users\mikas\Desktop\Utile\EsiReg` — nu amesteca versiunile.
 
 ## Partea 1: Apps Script (pe PC, ~10 minute)
@@ -97,13 +97,14 @@ Dacă mai iei o tabletă, repeți doar Partea 3, cu aceeași adresă `/exec` și
 
 Versiunea care rulează se vede:
 
-- pe tabletă, sus lângă „Anamnesis” (de ex. **v1.1**);
-- în Admin, dreapta sus: `App v1.1 (2026-09-27) · Google script v1.1`. Dacă scriptul Google e prea vechi apare ⚠, iar în „Connection & settings” scrie ce trebuie făcut;
+- pe tabletă, sus lângă „Anamnesis” (de ex. **v1.2**);
+- în Admin, dreapta sus: `App v1.2 (2026-09-28) · Google script v1.1`. Dacă scriptul Google e prea vechi apare ⚠, iar în „Connection & settings” scrie ce trebuie făcut;
 - în Apps Script, la `testSetup`, primul rând din Execution log: `Script version: 1.1`.
 
 | Versiune | Data | Ce e nou | Trebuie actualizat |
 |---|---|---|---|
-| **v1.1** | 27.09.2026 | Căutare prin tastare la Nationality, Language și Province (găsește și după numele în spaniolă/franceză). Alegerea rămâne când pacientul schimbă limba. Buton 🧪 în Admin pentru pacient de test. Versiunea afișată în aplicație și în script. | Netlify **și** Code.gs |
+| **v1.2** | 28.09.2026 | JSON-ul are mereu țara, limba, sexul și provincia **în engleză**, ca scriptul de import din programul clinicii să le completeze corect și la pacienții care aleg spaniolă sau franceză (înainte se pierdeau ~36 de țări în spaniolă și ~14 în franceză). „Slovak Republic (Slovakia)” devine „Slovakia”. În aplicație pacientul vede în continuare totul în limba lui. | Doar Netlify (Code.gs rămâne v1.1) |
+| v1.1 | 27.09.2026 | Căutare prin tastare la Nationality, Language și Province (găsește și după numele în spaniolă/franceză). Alegerea rămâne când pacientul schimbă limba. Buton 🧪 în Admin pentru pacient de test. Versiunea afișată în aplicație și în script. | Netlify **și** Code.gs |
 | v1.0 | 27.09.2026 | Prima versiune: termeni și bife editabile, salvare în Drive prin Apps Script, coadă fără internet, instalare pe tabletă. | — |
 
 ### Cum actualizezi la o versiune nouă

@@ -1,7 +1,7 @@
 /* NordicFysio Anamnesis — offline support.
    Online: always loads the latest version from the server (so a new Netlify deploy shows up at once).
    Offline: opens the last saved copy. Uploads to Apps Script are never cached. */
-const CACHE = 'nf-anamnesis-v1.1';
+const CACHE = 'nf-anamnesis-v1.2';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
 
 self.addEventListener('install', event => {
