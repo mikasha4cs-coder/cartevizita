@@ -19,7 +19,7 @@ Pentru alte foldere: deschide folderul în Drive, copiază partea de după `/fol
 
 ---
 
-**PC-ul îți trebuie o singură dată**, circa 15 minute, pentru Partea 1 (scriptul Google) și Partea 2 (Netlify). După asta, totul se face doar de pe tabletă: pacienții, Admin-ul, schimbarea termenilor. Pe PC nu instalezi aplicația și nu trebuie să rămână pornit.
+**PC-ul îți trebuie o singură dată**, circa 15 minute, pentru Partea 1 (scriptul Google) și Partea 2 (Netlify). După asta, totul se face doar de pe tabletă: pacienții, Admin-ul, schimbarea termenilor. Pe PC nu instalezi aplicația și nu trebuie să rămână pornit. Singura excepție: marcajul de import din Partea 4, care se instalează pe PC-ul unde rulează programul clinicii.
 
 ---
 
@@ -91,6 +91,22 @@ Pentru termeni și bife **nu** mai e nevoie de Netlify. Deploy nou doar dacă se
 
 Dacă mai iei o tabletă, repeți doar Partea 3, cu aceeași adresă `/exec` și aceeași cheie.
 
+## Partea 4: marcajul „Import pacient” (doar pe PC)
+
+⚠ **Merge doar pe PC** (Chrome sau Edge, Windows/Mac). **Nu merge pe Android / tabletă.** Se instalează **o singură dată pe fiecare PC** pe care rulează programul clinicii.
+
+Ce face: citește JSON-ul pacientului (din folderul **Anamnesis**) și completează formularul de **pacient nou** din programul clinicii. Câmpurile completate devin verzi.
+
+1. În Chrome apasă **Ctrl+Shift+B**: apare bara de marcaje sub adresă.
+2. Deschide fișierul `Instalar-marcador-PC.html` (dublu-click) și **trage butonul** „🔖 Importar paciente” în bara de marcaje.
+    - Dacă tragerea nu merge: în același fișier apasă **Copiar código**, apoi clic dreapta pe bara de marcaje → **Add page…** (în Chrome spaniol: **Añadir página…**) → **Name:** `Import pacient`, **URL:** lipești codul → Save. Codul se lipește **doar la URL**, nu în bara de adrese și nu în consola browserului (acolo dă eroare).
+    - Dacă ai deja un marcaj cu acest cod (de ex. „Script”), nu mai instala altul. Ca să-l actualizezi: clic dreapta → **Edit…** → lipești codul la URL → Save.
+3. Test: în programul clinicii deschizi formularul de **pacient nou** → apeși marcajul → alegi `Patient_Prenume_Nume.json` din folderul **Anamnesis** (Google Drive → My Drive → Anamnesis; pentru test: `Patient_TEST_Prueba.json`).
+4. Dacă prefixul de telefon aparține mai multor țări (+1, +7, +39, +44, +61), apare o listă numerotată: scrii **numărul** țării și apeși OK.
+5. **Verifici datele** înainte de salvare. Ce n-a putut fi completat rămâne gol: completezi manual. Tipul documentului se alege automat: verifică-l.
+
+Zilnic: pacientul completează pe tabletă → I AGREE → fișierele apar în Drive → pe PC: pacient nou în program → marcajul → alegi JSON-ul → verifici → salvezi.
+
 ---
 
 ## Versiuni
@@ -106,6 +122,8 @@ Versiunea care rulează se vede:
 | **v1.2** | 28.09.2026 | JSON-ul are mereu țara, limba, sexul și provincia **în engleză**, ca scriptul de import din programul clinicii să le completeze corect și la pacienții care aleg spaniolă sau franceză (înainte se pierdeau ~36 de țări în spaniolă și ~14 în franceză). „Slovak Republic (Slovakia)” devine „Slovakia”. În aplicație pacientul vede în continuare totul în limba lui. | Doar Netlify (Code.gs rămâne v1.1) |
 | v1.1 | 27.09.2026 | Căutare prin tastare la Nationality, Language și Province (găsește și după numele în spaniolă/franceză). Alegerea rămâne când pacientul schimbă limba. Buton 🧪 în Admin pentru pacient de test. Versiunea afișată în aplicație și în script. | Netlify **și** Code.gs |
 | v1.0 | 27.09.2026 | Prima versiune: termeni și bife editabile, salvare în Drive prin Apps Script, coadă fără internet, instalare pe tabletă. | — |
+
+Marcajul de import (PC) nu are versiune proprie: codul a fost verificat la 07.10.2026 cu aplicația v1.2.
 
 ### Cum actualizezi la o versiune nouă
 
